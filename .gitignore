@@ -7,3 +7,8 @@ Icon
 ._*
 .Spotlight-V100
 .Trashes 
+
+# Compiled binary
+gameEngine
+*.o
+*.out 
