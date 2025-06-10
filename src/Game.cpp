@@ -15,13 +15,17 @@ void Game::Initialize() {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
         return;
     }
+    SDL_DisplayMode displayMode;
+    SDL_GetCurrentDisplayMode(0, &displayMode);
+    windowWidth = 800;//displayMode.w;
+    windowHeight = 600;//displayMode.h;
 
     window = SDL_CreateWindow(
         "QQh Game", 
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED, 
-        800, 
-        600, 
+        windowWidth, 
+        windowHeight, 
         SDL_WINDOW_BORDERLESS
     );
     if (!window) {
@@ -34,12 +38,18 @@ void Game::Initialize() {
         std::cerr << "SDL_CreateRenderer Error: " << SDL_GetError() << std::endl;
         return;
     }
+    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 
     isRunning = true;
 
 }
 
+void Game::Setup() {
+    // TODO: Setup the game here
+}
+
 void Game::Run() {
+    Setup();
     while (isRunning) {
         ProcessInput();
         Update();
@@ -68,10 +78,16 @@ void Game::Update() {
 }
 
 void Game::Render() {
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
     SDL_RenderClear(renderer);
 
-    // TODO: Draw the game here
+    SDL_Surface* surface = IMG_Load("./assets/images/tank-tiger-right.png");
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+    SDL_Rect dstRect = {20, 20, 32, 32};
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_DestroyTexture(texture);
 
     SDL_RenderPresent(renderer);
 }
