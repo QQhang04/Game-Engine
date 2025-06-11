@@ -44,8 +44,12 @@ void Game::Initialize() {
 
 }
 
+glm::vec2 playerPosition;
+glm::vec2 playerVelocity;
+
 void Game::Setup() {
-    // TODO: Setup the game here
+    playerPosition = glm::vec2(20, 20);
+    playerVelocity = glm::vec2(10, 15);
 }
 
 void Game::Run() {
@@ -74,7 +78,15 @@ void Game::ProcessInput() {
 }
 
 void Game::Update() {
+    int timeToWait = MILLISECONDS_PER_FRAME - (SDL_GetTicks() - millisecsPreviousFrame);
+    if (timeToWait > 0 && timeToWait <= MILLISECONDS_PER_FRAME) { // 防止程序运行太慢
+        SDL_Delay(timeToWait);
+    }
 
+    double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0;
+    millisecsPreviousFrame = SDL_GetTicks();
+
+    playerPosition += playerVelocity * static_cast<float>(deltaTime);
 }
 
 void Game::Render() {
@@ -85,8 +97,13 @@ void Game::Render() {
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
 
-    SDL_Rect dstRect = {20, 20, 32, 32};
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_Rect dstRect = {
+        static_cast<int>(playerPosition.x), 
+        static_cast<int>(playerPosition.y), 
+        32, 
+        32
+    };
+    SDL_RenderCopy(renderer, texture, NULL, &dstRect);
     SDL_DestroyTexture(texture);
 
     SDL_RenderPresent(renderer);
