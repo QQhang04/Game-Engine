@@ -157,7 +157,33 @@ link时不会再compile，直接访问库实现的binary
 
 
 
+## 使用变量的makefile
+
+```makefile
+cc = g++
+LANG_STD = c++17
+COMPILE_FLAGS = -Wall -Wfatal-errors
+INCLUDE_PATHS = -I"./libs/" -I/opt/homebrew/include
+SRC_FILES = ./src/*.cpp \
+	./src/Game/*.cpp \
+	./src/Log/*.cpp \
+
+LINKER_FLAGS = -L/opt/homebrew/lib -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -llua
+OBJ_NAME = gameEngine
+
+
+build:
+	$(cc) $(COMPILE_FLAGS) -std=$(LANG_STD) $(SRC_FILES) $(INCLUDE_PATHS) $(LINKER_FLAGS) -o $(OBJ_NAME)
+	
+run:
+	./$(OBJ_NAME) -nocollision -debug
+	
+clean:
+	rm $(OBJ_NAME)
+```
 
 
 
 
+
+###### 注意更改.cpp文件位置时SRC_FILES也要加上对应的父文件夹

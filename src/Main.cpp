@@ -1,4 +1,5 @@
-#include "Game.h"
+#include "Game/Game.h"
+#include "Log/Logger.h"
 
 int main(int argc, char* argv[]) {
     Game game = Game();

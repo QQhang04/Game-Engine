@@ -1,18 +1,19 @@
 #include "Game.h"
+#include "../Log/Logger.h"
 #include <iostream>
 
 Game::Game() {
-    std::cout << "Game initialized" << std::endl;
+    Logger::Log("Game initialized");
     isRunning = false;
 }
 
 Game::~Game() {
-    std::cout << "Game destroyed" << std::endl;
+    Logger::Log("Game destroyed");
 }
 
 void Game::Initialize() {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
+        Logger::Err(std::string("SDL_Init Error: ") + SDL_GetError());
         return;
     }
     SDL_DisplayMode displayMode;
@@ -29,13 +30,13 @@ void Game::Initialize() {
         SDL_WINDOW_BORDERLESS
     );
     if (!window) {
-        std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
+        Logger::Err(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
         return;
     }
 
     renderer = SDL_CreateRenderer(window, -1, 0);
     if (!renderer) {
-        std::cerr << "SDL_CreateRenderer Error: " << SDL_GetError() << std::endl;
+        Logger::Err(std::string("SDL_CreateRenderer Error: ") + SDL_GetError());
         return;
     }
     SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
