@@ -33,6 +33,7 @@ class Entity {
         int GetId() const;
 
         Entity& operator=(const Entity& other) = default;
+        bool operator<(const Entity& other) const { return id < other.id;}
         bool operator==(const Entity& other) const { return id == other.id;}
         bool operator!=(const Entity& other) const { return id != other.id;}
 };
@@ -130,13 +131,17 @@ class Registry {
         // create a new entity
         Entity CreateEntity();
 
+        template <typename TComponent, typename ...TArgs> void AddComponent(Entity entity, TArgs&& ...args);
+        template <typename TComponent> void RemoveComponent(Entity entity);
+        template <typename TComponent> bool HasComponent(Entity entity) const;
+
         // only the entity can link to this system
         void AddEntityToSystem(Entity entity);
 
         // kill entity
 
         // add a component to entity: AddComponent<T>();
-        
+
         // remove a component from entity
         // does a entity has a component
 
