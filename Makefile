@@ -5,6 +5,7 @@ INCLUDE_PATHS = -I"./libs/" -I/opt/homebrew/include
 SRC_FILES = ./src/*.cpp \
 	./src/Game/*.cpp \
 	./src/Log/*.cpp \
+	./src/ECS/*.cpp
 
 LINKER_FLAGS = -L/opt/homebrew/lib -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -llua
 OBJ_NAME = gameEngine
