@@ -82,7 +82,7 @@ void System::RemoveEntityFromSystem(Entity entity) {
 
 ### Registry —— Entity Manager
 
-功能：协调整个ECS
+功能：协调整个ECS, managing the creation and destruction of entities/components/systems
 
 ![image-20250614163606090](/Users/qqhang/Library/Application Support/typora-user-images/image-20250614163606090.png)
 
@@ -104,8 +104,3 @@ each pool index <–> the entity id
 
 
 ![image-20250614163735807](/Users/qqhang/Library/Application Support/typora-user-images/image-20250614163735807.png)
-
-
-
-
-
