@@ -130,13 +130,20 @@ class Registry {
         // TODO:
         // create a new entity
         Entity CreateEntity();
-
+        
+        // Component Management
         template <typename TComponent, typename ...TArgs> void AddComponent(Entity entity, TArgs&& ...args);
         template <typename TComponent> void RemoveComponent(Entity entity);
         template <typename TComponent> bool HasComponent(Entity entity) const;
 
+        //System Management
+        template <typename TSystem, typename ...TArgs> void AddSystem(TArgs&& ...args);
+        template <typename TSystem> void RemoveSystem();
+        template <typename TSystem> bool HasSystem() const;
+        template <typename TSystem> TSystem& GetSystem() const;
+
         // only the entity can link to this system
-        void AddEntityToSystem(Entity entity);
+        void AddEntityToSystems(Entity entity);
 
         // kill entity
 

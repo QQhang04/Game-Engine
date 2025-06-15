@@ -3,10 +3,12 @@
 
 int IComponent::nextId = 0;
 
+// Entity impl
 int Entity::GetId() const {
     return id;
 }
 
+// System impl
 void System::AddEntityToSystem(Entity entity) {
     entities.push_back(entity);
 }
@@ -24,6 +26,44 @@ std::vector<Entity> System::GetSystemEntities() const {
 
 const Signature& System::GetComponentSignature() const {
     return componentSignature;
+}
+
+template <typename TSystem, typename ...TArgs>
+void Registry::AddSystem(TArgs&& ...args) {
+    TSystem* newSystem = new TSystem(std::forward<TArgs>(args)...);
+    systems.insert(std::make_pair(std::type_index(typeid(TSystem)), newSystem));
+    Logger::Log("Add System" + std::string(typeid(TSystem).name()));
+}
+
+template <typename TSystem>
+void Registry::RemoveSystem() {
+    systems.erase(std::type_index(typeid(TSystem)));
+    Logger::Log("Remove System" + std::string(typeid(TSystem).name()));
+}
+
+template <typename TSystem>
+bool Registry::HasSystem() const {
+    return systems.find(std::type_index(typeid(TSystem))) != systems.end();
+}
+
+template <typename TSystem>
+TSystem& Registry::GetSystem() const {
+    return *(std::static_pointer_cast<TSystem>(systems[std::type_index(typeid(TSystem))]));
+}
+
+
+// Registry impl
+void Registry::AddEntityToSystems(Entity entity) {
+    const auto entityId = entity.GetId();
+    const auto& entitySignature = entityComponentSignatures[entityId];
+
+    for (auto& system : systems) {
+        const auto& systemSignature = system.second -> GetComponentSignature();
+        bool isInterested = (entitySignature & systemSignature) == systemSignature;
+        if (isInterested) {
+            system.second -> AddEntityToSystem(entity);
+        }
+    }
 }
 
 Entity Registry::CreateEntity() {

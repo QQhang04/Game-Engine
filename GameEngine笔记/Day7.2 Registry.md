@@ -100,3 +100,115 @@ prototypes:![image-20250614182655667](/Users/qqhang/Library/Application Support/
 <img src="/Users/qqhang/Library/Application Support/typora-user-images/image-20250614190834850.png" alt="image-20250614190834850" style="zoom:33%;" />
 
 故这个示例中会模板实例化中很多不同类，每个类都有自己独有的static GetId方法
+
+#### 3.manage System 
+
+##### 3.1Add/Remove/Has/Get <xxxSystem>System
+
+![image-20250614195930874](/Users/qqhang/Library/Application Support/typora-user-images/image-20250614195930874.png)
+
+impl:
+
+![image-20250614200605643](/Users/qqhang/Library/Application Support/typora-user-images/image-20250614200605643.png)
+
+```cpp
+template <typename TSystem, typename ...TArgs>
+void Registry::AddSystem(TArgs&& ...args) {
+    TSystem* newSystem = new TSystem(std::forward<TArgs>(args)...);
+    // systems[std::type_index(typeid(TSystem))] = newSystem;
+    systems.insert(std::make_pair(std::type_index(typeid(TSystem)), newSystem));
+}
+```
+
+语法上的注意事项：
+
+- 如果你希望“有就覆盖、没有就插入”，用 systems[key] = value;
+
+- 如果你希望“只插入，不覆盖已有的”，用 insert，并可通过返回值判断是否插入成功
+
+- ##### 1. typeid(TSystem) 是什么？
+
+  - typeid(TSystem) 返回一个 std::type_info 对象，代表类型 TSystem 的唯一类型信息。
+
+  - 例如：typeid(int)、typeid(MyClass) 都可以。
+
+  ------
+
+  ##### 2. std::type_index 是什么？
+
+  - std::type_index 是一个包装了 std::type_info 的类，可以用作 map/set 的 key。
+
+  - 因为 std::type_info 不能直接比较大小或哈希，而 std::type_index 支持这些操作。
+
+  ------
+
+  ##### 3. 为什么要用 std::type_index(typeid(TSystem)) 作为 key？
+
+  ###### 目的：用类型本身作为 map 的 key，实现“类型到对象”的映射
+
+  - 在 ECS 框架中，通常会有很多不同的系统类型（如 RenderSystem、PhysicsSystem 等）。
+
+  - 你希望能通过“类型”快速找到对应的系统对象。
+
+  - 直接用类型名（如字符串）不安全也不高效。
+
+  - 用 std::type_index(typeid(TSystem)) 作为 key，可以唯一标识每个系统类型。
+
+  ------
+
+  ##### 4. 使用Resize时注意事项
+
+  - ##### 指针/引用失效
+
+    - 如果 resize 导致 vector 重新分配内存（比如扩大到超出当前capacity），所有指向vector元素的指针和引用都会失效。
+
+    - 缩小时，指向被删除元素的指针/引用也会失效。
+
+
+
+```cpp
+template <typename TSystem>
+TSystem& Registry::GetSystem() const {
+    return *(std::static_pointer_cast<TSystem>(systems[std::type_index(typeid(TSystem))]));
+}
+```
+
+c++中的类型转换：
+
+- dynamic_cast：运行时类型检查，通过查看RTTI来判断是否能正确将父类指针转换到子类指针（多态基类指针/引用），安全但慢，失败时返回nullptr或抛异常。
+
+- reinterpret_cast：极端低级别转换，几乎不做检查，危险。
+
+- const_cast：去掉const/volatile限定。
+
+- static_pointer_cast
+
+  - 只能用于 std::shared_ptr 或 std::unique_ptr。
+
+  - 会返回一个新的智能指针，指向同一块内存，但类型变成你想要的类型。
+
+  - 用法：std::static_pointer_cast<Derived>(basePtr)
+
+  - 内部其实就是对原始指针做 static_cast，然后包一层智能指针。
+
+  static_cast
+
+  - 只能用于原始指针或引用或基本数据类型的转换（但是没有运行时的检查）。
+
+  - 不能直接用于智能指针。
+
+  - 用法：static_cast<Derived*>(basePtr)
+
+
+
+##### 3.2Add Entity To Systems
+
+注意：是加到所有的符合条件的System**s**上
+
+![image-20250614200753897](/Users/qqhang/Library/Application Support/typora-user-images/image-20250614200753897.png)
+
+![image-20250614200827346](/Users/qqhang/Library/Application Support/typora-user-images/image-20250614200827346.png)
+
+通过&来比较`entity`和`System`的**signature**
+
+![image-20250614201332973](/Users/qqhang/Library/Application Support/typora-user-images/image-20250614201332973.png)
