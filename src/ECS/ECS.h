@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <typeindex>
 #include <set>
+#include "../Log/Logger.h"
+#include <memory>
 
 const unsigned int MAX_COMPONENTS = 32;
 typedef std::bitset<MAX_COMPONENTS> Signature;
@@ -112,18 +114,23 @@ class Registry {
     private:
         int numEntities = 0;
 
-        std::vector<IPool*> componentPools; 
+        std::vector<std::shared_ptr<IPool>> componentPools; 
 
         std::vector<Signature> entityComponentSignatures;
 
-        std::unordered_map<std::type_index, System*> systems;
+        std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
 
         // entities that are waited to be added / deleted
         std::set<Entity> entitiesToAdd;
         std::set<Entity> entitiesToRemove;
 
     public:
-        Registry() = default;
+        Registry() {
+            Logger::Log("Registry constructed");
+        }
+        ~Registry() {
+            Logger::Log("Registry destroyed");
+        }
 
         void Update();
 

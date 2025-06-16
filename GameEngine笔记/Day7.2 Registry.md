@@ -207,7 +207,7 @@ c++中的类型转换：
 
 ![image-20250614200753897](/Users/qqhang/Library/Application Support/typora-user-images/image-20250614200753897.png)
 
-![image-20250614200827346](/Users/qqhang/Library/Application Support/typora-user-images/image-20250614200827346.png)
+
 
 通过&来比较`entity`和`System`的**signature**
 

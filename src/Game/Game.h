@@ -1,6 +1,8 @@
 #ifndef GAME_H
 #define GAME_H 
 
+#include "../ECS/ECS.h"
+#include <memory>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <glm/glm.hpp>
@@ -17,6 +19,8 @@ class Game {
         int windowHeight;
 
         int millisecsPreviousFrame;
+
+        std::unique_ptr<Registry> registry;
 
     public:
         Game();

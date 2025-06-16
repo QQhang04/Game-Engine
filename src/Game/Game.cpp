@@ -4,8 +4,9 @@
 #include <iostream>
 
 Game::Game() {
-    Logger::Log("Game initialized");
+    Logger::Log("Game constructed");    
     isRunning = false;
+    registry = std::make_unique<Registry>();
 }
 
 Game::~Game() {
@@ -13,6 +14,7 @@ Game::~Game() {
 }
 
 void Game::Initialize() {
+    Logger::Log("Game initialized");
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         Logger::Err(std::string("SDL_Init Error: ") + SDL_GetError());
         return;
@@ -49,10 +51,8 @@ void Game::Initialize() {
 
 void Game::Setup() {
     // TODO : Setup the game
-    // Entity tank = registry.CreateEntity();
-    // tank.AddComponent<TransformComponent>(glm::vec2(20, 20));
-    // tank.AddComponent<BoxColliderComponent>(glm::vec2(10, 15));
-    // tank.AddComponent<SpriteComponent>("./assets/images/tank-tiger-right.png");
+    Entity tank = registry->CreateEntity();
+    Entity truck = registry->CreateEntity();
 }
 
 void Game::Run() {
@@ -99,7 +99,6 @@ void Game::Update() {
 void Game::Render() {
     SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
     SDL_RenderClear(renderer);
-
 
     SDL_RenderPresent(renderer);
 }
