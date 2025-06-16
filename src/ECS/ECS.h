@@ -19,10 +19,11 @@ struct IComponent {
 
 template<typename TComponent>
 class Component : public IComponent {
-    static int GetId() {
-        static auto id = nextId++;
-        return id;
-    }
+    public:
+        static int GetId() {
+            static auto id = nextId++;
+            return id;
+        }
 };
 
 class Entity {
@@ -165,12 +166,89 @@ class Registry {
         // get system
 };
 
+// SYSTEM IMPL
 template<typename TComponent>
 void System::RequireComponent() {
     const auto componentId = Component<TComponent>::GetId();
     componentSignature.set(componentId);
 }
 
+// REGISTRY Component manage IMPL
+template <typename TComponent, typename ...TArgs>
+void Registry::AddComponent(Entity entity, TArgs&& ...args) {
+    const auto componentId = Component<TComponent>::GetId();
+    const auto entityId = entity.GetId();
 
+    if (componentPools.size() <= componentId) {
+        componentPools.resize(componentId + 1);
+    }
+
+    if (componentPools[componentId] == nullptr) {
+        componentPools[componentId] = std::make_shared<Pool<TComponent>>();
+    }
+
+    auto componentPool = std::static_pointer_cast<Pool<TComponent>>(componentPools[componentId]);
+
+    if (entityId >= componentPool->GetSize()) {
+        componentPool->Resize(numEntities);
+    }
+
+    TComponent newComponent(std::forward<TArgs>(args)...);
+    componentPool->Set(entityId, newComponent);
+
+    if (entityComponentSignatures.size() <= entityId) {
+        entityComponentSignatures.resize(numEntities);
+    }
+    entityComponentSignatures[entityId].set(componentId);
+
+    Logger::Log("Add Component " + std::string(typeid(TComponent).name()) + "id = " + std::to_string(componentId) + " to Entity id = " + std::to_string(entityId));
+}
+
+template <typename TComponent>
+void Registry::RemoveComponent(Entity entity) {
+    const auto entityId = entity.GetId();
+    const auto componentId = Component<TComponent>::GetId();
+
+    if (entityComponentSignatures[entityId].test(componentId)) {
+        entityComponentSignatures[entityId].reset(componentId);
+    }
+    Logger::Log("Remove Component from Entity");
+}
+
+template <typename TComponent>
+bool Registry::HasComponent(Entity entity) const {
+    const auto entityId = entity.GetId();
+    const auto componentId = Component<TComponent>::GetId();
+
+    if (entityComponentSignatures[entityId].test(componentId)) {
+        return true;
+    }
+    return false;
+}
+
+// REGISTRY System manage IMPL
+template <typename TSystem, typename ...TArgs>
+void Registry::AddSystem(TArgs&& ...args) {
+    std::shared_ptr<TSystem> newSystem = std::make_shared<TSystem>(std::forward<TArgs>(args)...);
+    systems.insert(std::make_pair(std::type_index(typeid(TSystem)), newSystem));
+    Logger::Log("Add System" + std::string(typeid(TSystem).name()));
+}
+
+template <typename TSystem>
+void Registry::RemoveSystem() {
+    systems.erase(std::type_index(typeid(TSystem)));
+    Logger::Log("Remove System" + std::string(typeid(TSystem).name()));
+}
+
+template <typename TSystem>
+bool Registry::HasSystem() const {
+    return systems.find(std::type_index(typeid(TSystem))) != systems.end();
+}
+
+template <typename TSystem>
+TSystem& Registry::GetSystem() const {
+    auto system = systems.find(std::type_index(typeid(TSystem)));
+    return *(std::static_pointer_cast<TSystem>(system->second));
+}
 
 #endif

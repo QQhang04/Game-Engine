@@ -2,6 +2,8 @@
 #include "../Log/Logger.h"
 #include "../ECS/ECS.h"
 #include <iostream>
+#include "../Components/TransformComponent.h"
+#include "../Components/RigidBodyComponent.h"
 
 Game::Game() {
     Logger::Log("Game constructed");    
@@ -53,6 +55,9 @@ void Game::Setup() {
     // TODO : Setup the game
     Entity tank = registry->CreateEntity();
     Entity truck = registry->CreateEntity();
+
+    registry->AddComponent<TransformComponent>(tank, glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
+    registry->AddComponent<RigidBodyComponent>(truck, glm::vec2(10.0, 10.0));
 }
 
 void Game::Run() {
