@@ -39,6 +39,13 @@ class Entity {
         bool operator<(const Entity& other) const { return id < other.id;}
         bool operator==(const Entity& other) const { return id == other.id;}
         bool operator!=(const Entity& other) const { return id != other.id;}
+
+        template<typename TComponent, typename ...TArgs> void AddComponent(TArgs&& ...args);
+        template<typename TComponent> void RemoveComponent();
+        template<typename TComponent> bool HasComponent() const;
+        template<typename TComponent> TComponent& GetComponent() const;
+
+        class Registry* registry; // forward declaration(modern cpp syntax)
 };
 
 class System {
@@ -143,6 +150,7 @@ class Registry {
         template <typename TComponent, typename ...TArgs> void AddComponent(Entity entity, TArgs&& ...args);
         template <typename TComponent> void RemoveComponent(Entity entity);
         template <typename TComponent> bool HasComponent(Entity entity) const;
+        template <typename TComponent> TComponent& GetComponent(Entity entity) const;
 
         //System Management
         template <typename TSystem, typename ...TArgs> void AddSystem(TArgs&& ...args);
@@ -226,6 +234,15 @@ bool Registry::HasComponent(Entity entity) const {
     return false;
 }
 
+template <typename TComponent>
+TComponent& Registry::GetComponent(Entity entity) const {
+    const auto entityId = entity.GetId();
+    const auto componentId = Component<TComponent>::GetId();
+
+    auto componentPool = std::static_pointer_cast<Pool<TComponent>>(componentPools[componentId]);
+    return componentPool->Get(entityId);
+}
+
 // REGISTRY System manage IMPL
 template <typename TSystem, typename ...TArgs>
 void Registry::AddSystem(TArgs&& ...args) {
@@ -249,6 +266,28 @@ template <typename TSystem>
 TSystem& Registry::GetSystem() const {
     auto system = systems.find(std::type_index(typeid(TSystem)));
     return *(std::static_pointer_cast<TSystem>(system->second));
+}
+
+
+// ENTITY IMPL
+template<typename TComponent, typename ...TArgs>
+void Entity::AddComponent(TArgs&& ...args) {
+    registry->AddComponent<TComponent>(*this, std::forward<TArgs>(args)...);
+}
+
+template<typename TComponent>
+void Entity::RemoveComponent() {
+    registry->RemoveComponent<TComponent>(*this);
+}
+
+template<typename TComponent>
+bool Entity::HasComponent() const {
+    return registry->HasComponent<TComponent>(*this);
+}
+
+template<typename TComponent>
+TComponent& Entity::GetComponent() const {
+    return registry->GetComponent<TComponent>(*this);
 }
 
 #endif

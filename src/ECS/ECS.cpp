@@ -44,6 +44,7 @@ void Registry::AddEntityToSystems(Entity entity) {
 Entity Registry::CreateEntity() {
     const int entityId = numEntities++;
     Entity entity(entityId);
+    entity.registry = this;
     entitiesToAdd.insert(entity);
 
     if (entityId >= entityComponentSignatures.size()) {

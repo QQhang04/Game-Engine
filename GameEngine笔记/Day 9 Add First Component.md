@@ -94,3 +94,19 @@ class Component_TransformComponent : public IComponent {
 };
 ```
 
+
+
+#### 改进：
+
+从registry -> AddComponent<xxxComponent>(entity, …)
+
+到entity.AddComponent<xxxComponent>
+
+
+
+方法：给entity加上指向其owner `Registry`的的指针(这个是modern cpp新的前向声明的语法)
+
+```cpp
+ class Registry* registry; // forward declaration(modern cpp syntax)
+```
+
