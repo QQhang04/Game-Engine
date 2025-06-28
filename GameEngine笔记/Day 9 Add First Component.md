@@ -110,3 +110,6 @@ class Component_TransformComponent : public IComponent {
  class Registry* registry; // forward declaration(modern cpp syntax)
 ```
 
+
+
+#### 注意：循环指针引用 hard to fix

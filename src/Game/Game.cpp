@@ -4,6 +4,10 @@
 #include <iostream>
 #include "../Components/TransformComponent.h"
 #include "../Components/RigidBodyComponent.h"
+#include "../Components/SpriteComponent.h"
+
+#include "../Systems/MovementSystem.h"
+#include "../Systems/RenderSystem.h"
 
 Game::Game() {
     Logger::Log("Game constructed");    
@@ -52,12 +56,19 @@ void Game::Initialize() {
 
 
 void Game::Setup() {
-    // TODO : Setup the game
+    registry->AddSystem<MovementSystem>();
+    registry->AddSystem<RenderSystem>();    
+
     Entity tank = registry->CreateEntity();
     Entity truck = registry->CreateEntity();
 
     tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
-    truck.AddComponent<RigidBodyComponent>(glm::vec2(10.0, 10.0));
+    tank.AddComponent<RigidBodyComponent>(glm::vec2(10.0, 10.0));
+    tank.AddComponent<SpriteComponent>(32, 32);
+
+    truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 15.0));
+    truck.AddComponent<SpriteComponent>(50, 100);
+    truck.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
 }
 
 void Game::Run() {
@@ -94,16 +105,19 @@ void Game::Update() {
     double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0;
     millisecsPreviousFrame = SDL_GetTicks();
 
-    // TODO
-    // MovementSystem.Update();
-    // CollisionSystem.Update();
-    // DamageSystem.Update();
+    // Invoke 所有System的Update
+    registry->GetSystem<MovementSystem>().Update(deltaTime);
 
+    // 等所有系统update完成，update Registry中的waiting list中要新加入的entity
+    registry->Update();
 }
 
 void Game::Render() {
     SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
     SDL_RenderClear(renderer);
+
+    // Invoke所有要渲染的System的Update
+    registry->GetSystem<RenderSystem>().Update(renderer);
 
     SDL_RenderPresent(renderer);
 }

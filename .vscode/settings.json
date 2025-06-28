@@ -59,6 +59,8 @@
         "vector": "cpp",
         "algorithm": "cpp",
         "set": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "__availability": "cpp",
+        "__config": "cpp"
     }
 }

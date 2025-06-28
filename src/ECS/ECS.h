@@ -142,7 +142,6 @@ class Registry {
 
         void Update();
 
-        // TODO:
         // create a new entity
         Entity CreateEntity();
         
