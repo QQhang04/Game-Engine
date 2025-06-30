@@ -66,13 +66,13 @@ void Game::Setup() {
     Entity tank = registry->CreateEntity();
     Entity truck = registry->CreateEntity();
 
-    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
-    tank.AddComponent<RigidBodyComponent>(glm::vec2(10.0, 10.0));
+    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(3.0, 3.0), 45.0);
+    tank.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32);
 
-    truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 15.0));
-    truck.AddComponent<SpriteComponent>("truck-image", 50, 100);
-    truck.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
+    // truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 15.0));
+    // truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
+    // truck.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
 }
 
 void Game::Run() {
@@ -121,7 +121,7 @@ void Game::Render() {
     SDL_RenderClear(renderer);
 
     // Invoke所有要渲染的System的Update
-    registry->GetSystem<RenderSystem>().Update(renderer);
+    registry->GetSystem<RenderSystem>().Update(renderer, assetStore);
 
     SDL_RenderPresent(renderer);
 }
