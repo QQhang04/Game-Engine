@@ -247,13 +247,13 @@ template <typename TSystem, typename ...TArgs>
 void Registry::AddSystem(TArgs&& ...args) {
     std::shared_ptr<TSystem> newSystem = std::make_shared<TSystem>(std::forward<TArgs>(args)...);
     systems.insert(std::make_pair(std::type_index(typeid(TSystem)), newSystem));
-    Logger::Log("Add System" + std::string(typeid(TSystem).name()));
+    Logger::Log("Add System " + std::string(typeid(TSystem).name()));
 }
 
 template <typename TSystem>
 void Registry::RemoveSystem() {
     systems.erase(std::type_index(typeid(TSystem)));
-    Logger::Log("Remove System" + std::string(typeid(TSystem).name()));
+    Logger::Log("Remove System " + std::string(typeid(TSystem).name()));
 }
 
 template <typename TSystem>

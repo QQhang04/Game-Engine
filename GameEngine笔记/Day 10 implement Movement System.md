@@ -39,3 +39,10 @@ update their components
 ##### 2.3 RenderSystem：
 
 <img src="/Users/qqhang/Library/Application Support/typora-user-images/image-20250628113918025.png" alt="image-20250628113918025" style="zoom:50%;" />
+
+
+
+疑问：component、entityt的enable和disable
+
+
+

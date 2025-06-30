@@ -18,7 +18,6 @@ class MovementSystem : public System {
                 auto& rigidBody = entity.GetComponent<RigidBodyComponent>();
 
                 transform.position += rigidBody.velocity * static_cast<float>(deltaTime);
-                Logger::Log("Entity id = " + std::to_string(entity.GetId()) + " moved to " + std::to_string(transform.position.x) + ", " + std::to_string(transform.position.y));
             }
         }
 };
