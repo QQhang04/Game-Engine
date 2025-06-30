@@ -6,6 +6,8 @@
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 
+#include "../MapLoader/MapLoader.h"
+
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 
@@ -37,7 +39,7 @@ void Game::Initialize() {
         SDL_WINDOWPOS_CENTERED, 
         windowWidth, 
         windowHeight, 
-        SDL_WINDOW_BORDERLESS
+        SDL_WINDOW_RESIZABLE
     );
     if (!window) {
         Logger::Err(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
@@ -55,24 +57,53 @@ void Game::Initialize() {
 
 }
 
-
-void Game::Setup() {
+void Game::LoadLevel(int level = 1) {
+    // load assets
     assetStore->AddTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
     assetStore->AddTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
+    assetStore->AddTexture(renderer, "tilemap-image", "./assets/tilemaps/jungle.png");
 
+    // add systems
     registry->AddSystem<MovementSystem>();
     registry->AddSystem<RenderSystem>();    
 
+    // load tilemap
+    int tileScale = 2;
+    std::vector<std::vector<int>> map = MapLoader::LoadMap("./assets/tilemaps/jungle.map");
+    std::vector<Entity> tiles(map.size() * map[0].size());
+    for (int i = 0; i < map.size(); i++) {
+        for (int j = 0; j < map[i].size(); j++) {
+            Entity tile = registry->CreateEntity();
+            int tileId = map[i][j];
+            int row = tileId / 10, col = tileId % 10;
+
+            int textureWidth, textureHeight;
+            SDL_QueryTexture(assetStore->GetTexture("tilemap-image"), nullptr, nullptr, &textureWidth, &textureHeight);
+            int tileSize = textureWidth / 10;
+
+            tile.AddComponent<SpriteComponent>("tilemap-image", tileSize, tileSize, col * tileSize, row * tileSize);
+            tile.AddComponent<TransformComponent>(glm::vec2(j * tileSize * tileScale, i * tileSize * tileScale), glm::vec2(tileScale, tileScale), 0.0);
+            tiles[i * map[i].size() + j] = tile;
+        }
+    }
+
+    // add entities
     Entity tank = registry->CreateEntity();
     Entity truck = registry->CreateEntity();
 
-    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(3.0, 3.0), 45.0);
+    // add components
+    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(2.0, 2.0));
     tank.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32);
 
     // truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 15.0));
     // truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
     // truck.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
+}
+
+
+void Game::Setup() {
+    LoadLevel(1);
 }
 
 void Game::Run() {

@@ -31,7 +31,7 @@ class Entity {
         int id;
 
     public:
-        Entity(int id) : id(id) {}
+        Entity(int id = 0) : id(id) {}
         Entity(const Entity& other) = default;
         int GetId() const;
 

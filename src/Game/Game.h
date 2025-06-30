@@ -29,6 +29,7 @@ class Game {
         ~Game();
 
         void Initialize();
+        void LoadLevel(int level);
         void Setup();
         
         void Run();
