@@ -16,9 +16,30 @@ class RenderSystem : public System {
         }
 
         void Update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore) {
+            struct RenderableEntity {
+                TransformComponent transform;
+                SpriteComponent sprite;
+                
+                RenderableEntity(const TransformComponent& t, const SpriteComponent& s)
+                    : transform(t), sprite(s) {}
+            };
+            std::vector<RenderableEntity> renderables;
             for (auto entity : GetSystemEntities()) {
-                const auto transform = entity.GetComponent<TransformComponent>();
-                const auto sprite = entity.GetComponent<SpriteComponent>();
+                renderables.emplace_back(
+                    entity.GetComponent<TransformComponent>(),
+                    entity.GetComponent<SpriteComponent>()
+                );
+            }
+
+            // TODO 优化排序性能，调用时机
+            // sort by zIndex 越小越先渲染
+            std::sort(renderables.begin(), renderables.end(), [](const RenderableEntity& a, const RenderableEntity& b) {
+                return a.sprite.zIndex < b.sprite.zIndex;
+            });
+            
+            for (auto& renderable : renderables) {
+                const auto transform = renderable.transform;
+                const auto sprite = renderable.sprite;
 
                 SDL_Rect srcRect = sprite.srcRect;
                 SDL_Rect destRect = {

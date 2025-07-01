@@ -7,9 +7,10 @@
 struct SpriteComponent {
     std::string textureId;
     int width, height;
+    int zIndex;
     SDL_Rect srcRect;
 
-    SpriteComponent(const std::string& textureId = "", int w = 0, int h = 0, int srcRectX = 0, int srcRectY = 0) : textureId(textureId), width(w), height(h) {
+    SpriteComponent(const std::string& textureId = "", int w = 0, int h = 0, int zIndex = 0, int srcRectX = 0, int srcRectY = 0) : textureId(textureId), width(w), height(h), zIndex(zIndex) {
         srcRect.x = srcRectX;
         srcRect.y = srcRectY;
         srcRect.w = width;

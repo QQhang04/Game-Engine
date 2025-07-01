@@ -1,7 +1,9 @@
+#include <iostream>
+
 #include "Game.h"
 #include "../Log/Logger.h"
 #include "../ECS/ECS.h"
-#include <iostream>
+
 #include "../Components/TransformComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
@@ -81,7 +83,7 @@ void Game::LoadLevel(int level = 1) {
             SDL_QueryTexture(assetStore->GetTexture("tilemap-image"), nullptr, nullptr, &textureWidth, &textureHeight);
             int tileSize = textureWidth / 10;
 
-            tile.AddComponent<SpriteComponent>("tilemap-image", tileSize, tileSize, col * tileSize, row * tileSize);
+            tile.AddComponent<SpriteComponent>("tilemap-image", tileSize, tileSize, 0, col * tileSize, row * tileSize);
             tile.AddComponent<TransformComponent>(glm::vec2(j * tileSize * tileScale, i * tileSize * tileScale), glm::vec2(tileScale, tileScale), 0.0);
             tiles[i * map[i].size() + j] = tile;
         }
@@ -94,7 +96,7 @@ void Game::LoadLevel(int level = 1) {
     // add components
     tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(2.0, 2.0));
     tank.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
-    tank.AddComponent<SpriteComponent>("tank-image", 32, 32);
+    tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1, 0, 0);
 
     // truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 15.0));
     // truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
