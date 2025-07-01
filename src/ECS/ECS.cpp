@@ -19,6 +19,7 @@ void System::RemoveEntityFromSystem(Entity entity) {
     );
 }
 
+// TODO 目前存在已经建立的entity被删掉、移除component, 或者增加component时对应system的更新不到位的情况
 std::vector<Entity> System::GetSystemEntities() const {
     return entities;
 }
@@ -28,7 +29,7 @@ const Signature& System::GetComponentSignature() const {
 }
 
 // Registry impl
-// TODO 1常使用别的数据结构来优化算法
+// TODO 1使用别的数据结构来优化算法
 // TODO 2目前存在已经建立的entity被删掉、移除component, 或者增加component时对应system的更新不到位的情况
 void Registry::AddEntityToSystems(Entity entity) {
     const auto entityId = entity.GetId();

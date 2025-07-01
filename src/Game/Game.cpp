@@ -12,6 +12,7 @@
 
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
+#include "../Systems/AnimationSystem.h"
 
 Game::Game() {
     Logger::Log("Game constructed");    
@@ -41,7 +42,7 @@ void Game::Initialize() {
         SDL_WINDOWPOS_CENTERED, 
         windowWidth, 
         windowHeight, 
-        SDL_WINDOW_RESIZABLE
+        SDL_WINDOW_BORDERLESS
     );
     if (!window) {
         Logger::Err(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
@@ -64,10 +65,12 @@ void Game::LoadLevel(int level = 1) {
     assetStore->AddTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
     assetStore->AddTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
     assetStore->AddTexture(renderer, "tilemap-image", "./assets/tilemaps/jungle.png");
+    assetStore->AddTexture(renderer, "chopper-image", "./assets/images/chopper.png");
 
     // add systems
     registry->AddSystem<MovementSystem>();
     registry->AddSystem<RenderSystem>();    
+    registry->AddSystem<AnimationSystem>();
 
     // load tilemap
     int tileScale = 2;
@@ -90,6 +93,7 @@ void Game::LoadLevel(int level = 1) {
     }
 
     // add entities
+    Entity chopper = registry->CreateEntity();
     Entity tank = registry->CreateEntity();
     Entity truck = registry->CreateEntity();
 
@@ -97,6 +101,11 @@ void Game::LoadLevel(int level = 1) {
     tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(2.0, 2.0));
     tank.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1, 0, 0);
+
+    chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 100.0), glm::vec2(2.0, 2.0));
+    chopper.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
+    chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2, 0, 0);
+    chopper.AddComponent<AnimationComponent>(2, 15);
 
     // truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 15.0));
     // truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
@@ -142,8 +151,9 @@ void Game::Update() {
     double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0;
     millisecsPreviousFrame = SDL_GetTicks();
 
-    // Invoke 所有System的Update
+    // Invoke System的逻辑Update
     registry->GetSystem<MovementSystem>().Update(deltaTime);
+    registry->GetSystem<AnimationSystem>().Update();
 
     // 等所有系统update完成，update Registry中的waiting list中要新加入的entity
     registry->Update();
