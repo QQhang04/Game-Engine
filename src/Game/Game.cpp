@@ -33,15 +33,17 @@ void Game::Initialize() {
     }
     SDL_DisplayMode displayMode;
     SDL_GetCurrentDisplayMode(0, &displayMode);
-    windowWidth = 800;//displayMode.w;
-    windowHeight = 600;//displayMode.h;
+    
+    // 设置游戏逻辑分辨率
+    windowWidth = 800;
+    windowHeight = 640;
 
     window = SDL_CreateWindow(
         "QQh Game", 
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED, 
-        windowWidth, 
-        windowHeight, 
+        displayMode.w, 
+        displayMode.h, 
         SDL_WINDOW_BORDERLESS
     );
     if (!window) {
@@ -54,7 +56,11 @@ void Game::Initialize() {
         Logger::Err(std::string("SDL_CreateRenderer Error: ") + SDL_GetError());
         return;
     }
+    
     SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    
+    // 设置逻辑渲染尺寸为800x600，SDL会自动缩放到实际屏幕尺寸
+    SDL_RenderSetLogicalSize(renderer, windowWidth, windowHeight);
 
     isRunning = true;
 
@@ -66,6 +72,7 @@ void Game::LoadLevel(int level = 1) {
     assetStore->AddTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
     assetStore->AddTexture(renderer, "tilemap-image", "./assets/tilemaps/jungle.png");
     assetStore->AddTexture(renderer, "chopper-image", "./assets/images/chopper.png");
+    assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
 
     // add systems
     registry->AddSystem<MovementSystem>();
@@ -73,7 +80,7 @@ void Game::LoadLevel(int level = 1) {
     registry->AddSystem<AnimationSystem>();
 
     // load tilemap
-    int tileScale = 2;
+    int tileScale = 1;
     std::vector<std::vector<int>> map = MapLoader::LoadMap("./assets/tilemaps/jungle.map");
     std::vector<Entity> tiles(map.size() * map[0].size());
     for (int i = 0; i < map.size(); i++) {
@@ -96,16 +103,21 @@ void Game::LoadLevel(int level = 1) {
     Entity chopper = registry->CreateEntity();
     Entity tank = registry->CreateEntity();
     Entity truck = registry->CreateEntity();
+    Entity radar = registry->CreateEntity();
 
     // add components
-    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(2.0, 2.0));
+    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0));
     tank.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1, 0, 0);
 
-    chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 100.0), glm::vec2(2.0, 2.0));
+    chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 100.0), glm::vec2(1.0, 1.0));
     chopper.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
     chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2, 0, 0);
     chopper.AddComponent<AnimationComponent>(2, 15);
+
+    radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 100, 10.0), glm::vec2(1.0, 1.0));
+    radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 3);
+    radar.AddComponent<AnimationComponent>(8, 1);
 
     // truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 15.0));
     // truck.AddComponent<SpriteComponent>("truck-image", 32, 32);

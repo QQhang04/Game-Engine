@@ -2,7 +2,6 @@
 #define ANIMATION_COMPONENT_H
 
 #include <SDL2/SDL.h>
-
 struct AnimationComponent {
     int numFrames;
     int speed;
