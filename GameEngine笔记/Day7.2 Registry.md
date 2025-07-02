@@ -10,6 +10,48 @@ std::vector<IPool*> componentPools; // index : component Id
 
 设计思路：因为Pool类含有**typename T**，无法直接放入容器，故设计一个父级接口`IPool`让`Pool`继承
 
+Q: 为什么无法直接放入容器？
+
+##### 原因分析：
+
+```cpp
+class IPool {
+    public:
+        virtual ~IPool() {};
+};
+
+template<typename T>
+class Pool : public IPool {
+    // 具体实现
+};
+```
+
+######  **统一存储不同类型的组件池**
+```cpp
+std::vector<std::shared_ptr<IPool>> componentPools;
+```
+
+这个向量需要存储**不同类型的组件池**：
+- `Pool<TransformComponent>`
+- `Pool<SpriteComponent>` 
+- `Pool<RigidBodyComponent>`
+
+如果直接使用 `std::shared_ptr<Pool>`，编译器会报错，**因为**：
+- `Pool<TransformComponent>` 和 `Pool<SpriteComponent>` 是**完全不同的类型**
+- 不能存储在同一个 `std::vector<std::shared_ptr<Pool>>` 中
+
+###### **运行时类型转换**
+```cpp
+// 在AddComponent中：
+auto componentPool = std::static_pointer_cast<Pool<TComponent>>(componentPools[componentId]);
+```
+
+通过基类指针存储，然后在需要时转换为具体的 `Pool<TComponent>` 类型。
+
+这是C++中实现**类型擦除**和**多态容器**的标准做法！
+
+
+
 ![image-20250614171807314](/Users/qqhang/Library/Application Support/typora-user-images/image-20250614171807314.png)
 
 

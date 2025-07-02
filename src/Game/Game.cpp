@@ -7,12 +7,15 @@
 #include "../Components/TransformComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
+#include "../Components/BoxColliderComponent.h"
 
 #include "../MapLoader/MapLoader.h"
 
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/AnimationSystem.h"
+#include "../Systems/CollisionSystem.h"
+#include "../Systems/Debug/RenderBoxColliderSystem.h"
 
 Game::Game() {
     Logger::Log("Game constructed");    
@@ -27,6 +30,7 @@ Game::~Game() {
 
 void Game::Initialize() {
     Logger::Log("Game initialized");
+    isDebugMode = false;
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         Logger::Err(std::string("SDL_Init Error: ") + SDL_GetError());
         return;
@@ -78,6 +82,9 @@ void Game::LoadLevel(int level = 1) {
     registry->AddSystem<MovementSystem>();
     registry->AddSystem<RenderSystem>();    
     registry->AddSystem<AnimationSystem>();
+    registry->AddSystem<CollisionSystem>();
+    registry->AddSystem<RenderBoxColliderSystem>();
+    Logger::Log("Systems added");
 
     // load tilemap
     int tileScale = 1;
@@ -106,9 +113,10 @@ void Game::LoadLevel(int level = 1) {
     Entity radar = registry->CreateEntity();
 
     // add components
-    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0));
-    tank.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
+    tank.AddComponent<TransformComponent>(glm::vec2(100.0, 10.0), glm::vec2(1.0, 1.0));
+    tank.AddComponent<RigidBodyComponent>(glm::vec2(-15.0, 0.0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1, 0, 0);
+    tank.AddComponent<BoxColliderComponent>(glm::vec2(32.0, 32.0), glm::vec2(0.0, 0.0));
 
     chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 100.0), glm::vec2(1.0, 1.0));
     chopper.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
@@ -119,9 +127,10 @@ void Game::LoadLevel(int level = 1) {
     radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 3);
     radar.AddComponent<AnimationComponent>(8, 1);
 
-    // truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 15.0));
-    // truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
-    // truck.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
+    truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
+    truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
+    truck.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0), glm::vec2(1.0, 1.0), 0.0);
+    truck.AddComponent<BoxColliderComponent>(glm::vec2(32.0, 32.0), glm::vec2(0.0, 0.0));
 }
 
 
@@ -149,6 +158,9 @@ void Game::ProcessInput() {
                 if (event.key.keysym.sym == SDLK_ESCAPE) {
                     isRunning = false;
                 }
+                if (event.key.keysym.sym == SDLK_d) {
+                    isDebugMode = !isDebugMode;
+                }
                 break;
         }
     }
@@ -166,6 +178,7 @@ void Game::Update() {
     // Invoke System的逻辑Update
     registry->GetSystem<MovementSystem>().Update(deltaTime);
     registry->GetSystem<AnimationSystem>().Update();
+    registry->GetSystem<CollisionSystem>().Update();
 
     // 等所有系统update完成，update Registry中的waiting list中要新加入的entity
     registry->Update();
@@ -177,6 +190,11 @@ void Game::Render() {
 
     // Invoke所有要渲染的System的Update
     registry->GetSystem<RenderSystem>().Update(renderer, assetStore);
+
+    // 如果debug模式开启，则Invoke所有需要渲染的Debug System的Update
+    if (isDebugMode) {
+        registry->GetSystem<RenderBoxColliderSystem>().Update(renderer);
+    }
 
     SDL_RenderPresent(renderer);
 }

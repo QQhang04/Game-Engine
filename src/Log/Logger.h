@@ -7,7 +7,8 @@
 enum LogType {
     LOG_INFO,
     LOG_WARNING,
-    LOG_ERROR
+    LOG_ERROR,
+    LOG_COLLISION
 };
 
 struct LogEntry {
@@ -20,6 +21,7 @@ class Logger {
         static std::vector<LogEntry> messages;
         static void Log(const std::string& message);
         static void Err(const std::string& message);
+        static void LogCollision(const std::string& message);
 };
 
 #endif

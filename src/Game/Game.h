@@ -15,7 +15,10 @@ class Game {
     private:
         SDL_Window* window;
         SDL_Renderer* renderer;
+
         bool isRunning;
+        bool isDebugMode;
+
         int windowWidth;
         int windowHeight;
 

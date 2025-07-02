@@ -41,3 +41,12 @@ cal current frame:
 3. **时间独立** - 不依赖帧率，基于实际时间计算
 4. **平滑过渡** - 即使帧率不稳定，动画速度也保持一致
 
+
+
+
+
+### 总结:
+
+Animation Component 记录当前帧和动画时间
+
+Animation System 更新每个animation的当前帧，并且更新他们的Sprite的SrcRect

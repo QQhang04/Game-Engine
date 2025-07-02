@@ -28,3 +28,11 @@ void Logger::Err(const std::string& message) {
     messages.push_back(logEntry);
     std::cerr << "\x1B[91m" << logEntry.message << "\033[0m" << std::endl;
 }
+
+void Logger::LogCollision(const std::string& message) {
+    LogEntry logEntry;
+    logEntry.type = LOG_COLLISION;
+    logEntry.message = "COLLISION: [" + CurrentDateTimeToString() + "]: " + message;
+    std::cout << "\x1B[33m" << logEntry.message << "\033[0m" << std::endl;
+    messages.push_back(logEntry);
+}
