@@ -38,6 +38,8 @@ class CollisionSystem : public System {
                     if (isColliding) {
                         // TODO: 发起事件通知碰撞发生
                         Logger::LogCollision("Collision detected between entities " + std::to_string(entity1.GetId()) + " and " + std::to_string(entity2.GetId()));
+                        entity1.Destroy();
+                        entity2.Destroy();
                     }
                 }
             }

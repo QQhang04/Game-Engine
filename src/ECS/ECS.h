@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <typeindex>
 #include <set>
+#include <deque>
 #include "../Log/Logger.h"
 #include <memory>
 
@@ -34,6 +35,7 @@ class Entity {
         Entity(int id = 0) : id(id) {}
         Entity(const Entity& other) = default;
         int GetId() const;
+        void Destroy() const;
 
         Entity& operator=(const Entity& other) = default;
         bool operator<(const Entity& other) const { return id < other.id;}
@@ -121,6 +123,7 @@ class Pool : public IPool {
 class Registry {
     private:
         int numEntities = 0;
+        std::deque<int> freeEntityIds;
 
         std::vector<std::shared_ptr<IPool>> componentPools; 
 
@@ -144,6 +147,7 @@ class Registry {
 
         // create a new entity
         Entity CreateEntity();
+        void RemoveEntity(Entity entity);
         
         // Component Management
         template <typename TComponent, typename ...TArgs> void AddComponent(Entity entity, TArgs&& ...args);
@@ -157,20 +161,9 @@ class Registry {
         template <typename TSystem> bool HasSystem() const;
         template <typename TSystem> TSystem& GetSystem() const;
 
-        // only the entity can link to this system
         void AddEntityToSystems(Entity entity);
-
-        // kill entity
-
-        // add a component to entity: AddComponent<T>();
-
-        // remove a component from entity
-        // does a entity has a component
-
-        // add system
-        // remove system
-        // has system
-        // get system
+        void RemoveEntityFromSystems(Entity entity);
+        
 };
 
 // SYSTEM IMPL
