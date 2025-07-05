@@ -6,6 +6,9 @@
 #include "../Components/BoxColliderComponent.h"
 #include <vector>
 
+#include "../EventBus/EventBus.h"
+#include "../Events/CollisionEvent.h"
+
 class CollisionSystem : public System {
     public:
         CollisionSystem() {
@@ -14,7 +17,7 @@ class CollisionSystem : public System {
             RequireComponent<BoxColliderComponent>();
         }
 
-        void Update() {
+        void Update(std::unique_ptr<EventBus>& eventBus) {
             std::vector<Entity> entities = GetSystemEntities();
             for (int i = 0; i < entities.size(); i++) {
                 Entity entity1 = entities[i];
@@ -36,10 +39,8 @@ class CollisionSystem : public System {
                         boxCollider2.size.y * transform2.scale.y
                     );
                     if (isColliding) {
-                        // TODO: 发起事件通知碰撞发生
-                        Logger::LogCollision("Collision detected between entities " + std::to_string(entity1.GetId()) + " and " + std::to_string(entity2.GetId()));
-                        entity1.Destroy();
-                        entity2.Destroy();
+                        Logger::LogEvent("emitting collision event for entities " + std::to_string(entity1.GetId()) + " and " + std::to_string(entity2.GetId()));
+                        eventBus->EmitEvent<CollisionEvent>(entity1, entity2);
                     }
                 }
             }

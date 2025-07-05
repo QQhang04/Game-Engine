@@ -4,7 +4,9 @@ at `Registry`:
 
 ##### deque<int> freeIds; // 已经删除的可以复用的entity-id
 
-deque：双端链表，头尾插入删除效率高
+deque：双向数组(2维)，头尾插入删除效率高
+
+区分:list:双向链表
 
 
 

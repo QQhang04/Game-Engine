@@ -29,7 +29,7 @@ void Logger::Err(const std::string& message) {
     std::cerr << "\x1B[91m" << logEntry.message << "\033[0m" << std::endl;
 }
 
-void Logger::LogCollision(const std::string& message) {
+void Logger::LogEvent(const std::string& message) {
     LogEntry logEntry;
     logEntry.type = LOG_COLLISION;
     logEntry.message = "COLLISION: [" + CurrentDateTimeToString() + "]: " + message;

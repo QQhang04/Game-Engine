@@ -21,7 +21,7 @@ class Logger {
         static std::vector<LogEntry> messages;
         static void Log(const std::string& message);
         static void Err(const std::string& message);
-        static void LogCollision(const std::string& message);
+        static void LogEvent(const std::string& message);
 };
 
 #endif

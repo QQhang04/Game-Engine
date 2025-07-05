@@ -17,11 +17,14 @@
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/Debug/RenderBoxColliderSystem.h"
 
+#include "../Events/CollisionEvent.h"
+
 Game::Game() {
     Logger::Log("Game constructed");    
     isRunning = false;
     registry = std::make_unique<Registry>();
     assetStore = std::make_unique<AssetStore>();
+    eventBus = std::make_unique<EventBus>();
 }
 
 Game::~Game() {
@@ -84,6 +87,10 @@ void Game::LoadLevel(int level = 1) {
     registry->AddSystem<AnimationSystem>();
     registry->AddSystem<CollisionSystem>();
     registry->AddSystem<RenderBoxColliderSystem>();
+
+    // Subscribe to events (只需要订阅一次)
+    registry->GetSystem<RenderBoxColliderSystem>().SubscribeToEvents(eventBus);
+    
     Logger::Log("Systems added");
 
     // load tilemap
@@ -175,10 +182,14 @@ void Game::Update() {
     double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0;
     millisecsPreviousFrame = SDL_GetTicks();
 
+    eventBus->Reset();
+
+    registry->GetSystem<RenderBoxColliderSystem>().SubscribeToEvents(eventBus);
+
     // Invoke System的逻辑Update
     registry->GetSystem<MovementSystem>().Update(deltaTime);
     registry->GetSystem<AnimationSystem>().Update();
-    registry->GetSystem<CollisionSystem>().Update();
+    registry->GetSystem<CollisionSystem>().Update(eventBus); // CollisionSystem会发起事件
 
     // 等所有系统update完成，update Registry中的waiting list中要新加入的entity
     registry->Update();

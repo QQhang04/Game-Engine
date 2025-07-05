@@ -5,12 +5,24 @@
 #include "../../ECS/ECS.h"
 #include "../../Components/TransformComponent.h"
 #include "../../Components/BoxColliderComponent.h"
+#include "../../Log/Logger.h"
+#include <set>
+
+#include "../../EventBus/EventBus.h"
+#include "../../Events/CollisionEvent.h"
 
 class RenderBoxColliderSystem : public System {
+    private:
+        std::set<int> collidingEntities;
+
     public:
         RenderBoxColliderSystem() {
             RequireComponent<TransformComponent>();
             RequireComponent<BoxColliderComponent>();
+        }
+
+        void SubscribeToEvents(std::unique_ptr<EventBus>& eventBus) {
+            eventBus->Subscribe<CollisionEvent>(this, &RenderBoxColliderSystem::OnCollision);
         }
 
         void Update(SDL_Renderer* renderer) {
@@ -26,9 +38,24 @@ class RenderBoxColliderSystem : public System {
                     static_cast<int>(boxCollider.size.x * transform.scale.x),
                     static_cast<int>(boxCollider.size.y * transform.scale.y)
                 };
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                
+                // 如果实体在碰撞集合中，设置为黄色，否则为红色
+                if (collidingEntities.find(entity.GetId()) != collidingEntities.end()) {
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Yellow
+                } else {
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red
+                }
                 SDL_RenderDrawRect(renderer, &collider_rect);
             }
+            // 每帧清除碰撞记录，这样只有持续碰撞的才会保持黄色
+            collidingEntities.clear();
+        }
+
+        void OnCollision(CollisionEvent& event) {
+            Logger::LogEvent("on collision for entities " + std::to_string(event.entityA.GetId()) + " and " + std::to_string(event.entityB.GetId()));
+            // 记录碰撞的实体
+            collidingEntities.insert(event.entityA.GetId());
+            collidingEntities.insert(event.entityB.GetId());
         }
 };
 
