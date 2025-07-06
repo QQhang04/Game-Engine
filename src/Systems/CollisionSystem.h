@@ -39,7 +39,7 @@ class CollisionSystem : public System {
                         boxCollider2.size.y * transform2.scale.y
                     );
                     if (isColliding) {
-                        Logger::LogEvent("emitting collision event for entities " + std::to_string(entity1.GetId()) + " and " + std::to_string(entity2.GetId()));
+                        // Logger::LogEvent("emitting collision event for entities " + std::to_string(entity1.GetId()) + " and " + std::to_string(entity2.GetId()));
                         eventBus->EmitEvent<CollisionEvent>(entity1, entity2);
                     }
                 }

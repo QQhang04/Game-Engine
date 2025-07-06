@@ -206,8 +206,6 @@ sequenceDiagram
 
 
 
-## 
-
 ##### 3.1 Subscribe
 
 实际调用时: 在`RenderBoxColliderSystem`[debug]中:

@@ -39,7 +39,7 @@ class Game {
         
         void Run();
         
-        void ProcessInput();
+        void HandleInput();
         void Update();
         void Render();
        

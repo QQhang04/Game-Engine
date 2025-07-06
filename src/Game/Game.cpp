@@ -15,9 +15,13 @@
 #include "../Systems/RenderSystem.h"
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/CollisionSystem.h"
+#include "../Systems/KeyboardMovementSystem.h"
+
 #include "../Systems/Debug/RenderBoxColliderSystem.h"
 
 #include "../Events/CollisionEvent.h"
+#include "../Events/KeyPressedEvent.h"
+
 
 Game::Game() {
     Logger::Log("Game constructed");    
@@ -86,10 +90,13 @@ void Game::LoadLevel(int level = 1) {
     registry->AddSystem<RenderSystem>();    
     registry->AddSystem<AnimationSystem>();
     registry->AddSystem<CollisionSystem>();
+    registry->AddSystem<KeyboardControlSystem>();
+
     registry->AddSystem<RenderBoxColliderSystem>();
 
     // Subscribe to events (只需要订阅一次)
     registry->GetSystem<RenderBoxColliderSystem>().SubscribeToEvents(eventBus);
+    registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(eventBus);
     
     Logger::Log("Systems added");
 
@@ -148,13 +155,13 @@ void Game::Setup() {
 void Game::Run() {
     Setup();
     while (isRunning) {
-        ProcessInput();
+        HandleInput();
         Update();
         Render();
     }
 }
 
-void Game::ProcessInput() {
+void Game::HandleInput() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -168,6 +175,7 @@ void Game::ProcessInput() {
                 if (event.key.keysym.sym == SDLK_d) {
                     isDebugMode = !isDebugMode;
                 }
+                eventBus->EmitEvent<KeyPressedEvent>(event.key.keysym.sym);
                 break;
         }
     }
@@ -182,13 +190,10 @@ void Game::Update() {
     double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0;
     millisecsPreviousFrame = SDL_GetTicks();
 
-    eventBus->Reset();
-
-    registry->GetSystem<RenderBoxColliderSystem>().SubscribeToEvents(eventBus);
-
     // Invoke System的逻辑Update
     registry->GetSystem<MovementSystem>().Update(deltaTime);
     registry->GetSystem<AnimationSystem>().Update();
+
     registry->GetSystem<CollisionSystem>().Update(eventBus); // CollisionSystem会发起事件
 
     // 等所有系统update完成，update Registry中的waiting list中要新加入的entity

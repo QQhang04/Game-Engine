@@ -61,6 +61,7 @@
         "set": "cpp",
         "typeindex": "cpp",
         "__availability": "cpp",
-        "__config": "cpp"
+        "__config": "cpp",
+        "regex": "cpp"
     }
 }
