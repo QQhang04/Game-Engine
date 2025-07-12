@@ -21,7 +21,7 @@ public:
             animation.frameIndex = static_cast<int>(lastedTime) % animation.numFrames;
 
             sprite.srcRect.x = sprite.width * animation.frameIndex;
-            sprite.srcRect.y = 0;
+            // sprite.srcRect.y = 0;
             sprite.srcRect.w = sprite.width;
             sprite.srcRect.h = sprite.height;
         }

@@ -13,3 +13,7 @@
 4.component的enable，disable ；entity的enable，disable
 
 5.优化addEntityToSystems，而不是每一次都循环遍历所有的system
+
+
+
+6.EventSystem里做到高级事件系统, 如分层，tunnel……

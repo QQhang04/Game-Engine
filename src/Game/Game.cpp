@@ -8,6 +8,7 @@
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/BoxColliderComponent.h"
+#include "../Components/CharacterControlledComponent.h"
 
 #include "../MapLoader/MapLoader.h"
 
@@ -15,12 +16,13 @@
 #include "../Systems/RenderSystem.h"
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/CollisionSystem.h"
-#include "../Systems/KeyboardMovementSystem.h"
+#include "../Systems/KeyboardControlSystem.h"
 
 #include "../Systems/Debug/RenderBoxColliderSystem.h"
 
 #include "../Events/CollisionEvent.h"
 #include "../Events/KeyPressedEvent.h"
+#include "../Events/KeyReleasedEvent.h"
 
 
 Game::Game() {
@@ -82,7 +84,7 @@ void Game::LoadLevel(int level = 1) {
     assetStore->AddTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
     assetStore->AddTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
     assetStore->AddTexture(renderer, "tilemap-image", "./assets/tilemaps/jungle.png");
-    assetStore->AddTexture(renderer, "chopper-image", "./assets/images/chopper.png");
+    assetStore->AddTexture(renderer, "chopper-image", "./assets/images/chopper-spritesheet.png");
     assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
 
     // add systems
@@ -136,6 +138,7 @@ void Game::LoadLevel(int level = 1) {
     chopper.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
     chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2, 0, 0);
     chopper.AddComponent<AnimationComponent>(2, 15);
+    chopper.AddComponent<CharacterControlledComponent>(100.0f);
 
     radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 100, 10.0), glm::vec2(1.0, 1.0));
     radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 3);
@@ -176,6 +179,9 @@ void Game::HandleInput() {
                     isDebugMode = !isDebugMode;
                 }
                 eventBus->EmitEvent<KeyPressedEvent>(event.key.keysym.sym);
+                break;
+            case SDL_KEYUP:
+                eventBus->EmitEvent<KeyReleasedEvent>(event.key.keysym.sym);
                 break;
         }
     }

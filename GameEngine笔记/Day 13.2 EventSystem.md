@@ -365,3 +365,35 @@ template<typename TEvent, typename... TArgs>
 ```
 
 这里eventbus的`subscribers[typeid(TEvent)]`属性是`unique_ptr<HandlerList.>`，故通过`get()`来获得资源的访问权限
+
+#### **✅ 常用思路（可选）**
+
+
+
+### **1.** **只传访问权，不保存**
+
+```
+void Use(MyClass* p) {
+    p->doSomething();  // ✅ 只用一次，安全
+}
+```
+
+
+
+### **2.** **用 shared_ptr 替代**
+
+如果你希望多个对象可以安全地共享一个对象的生命周期（即多个“访问者”都能保证对象不会提前被析构），就该使用 std::shared_ptr<T>：
+
+```
+std::shared_ptr<MyClass> p = std::make_shared<MyClass>();
+```
+
+这样 C 就可以安全地保存一份：
+
+```
+class C {
+    std::shared_ptr<MyClass> held;
+public:
+    void Set(std::shared_ptr<MyClass> p) { held = p; }
+};
+```
