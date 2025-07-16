@@ -9,6 +9,7 @@
 #include "../Components/SpriteComponent.h"
 #include "../Components/BoxColliderComponent.h"
 #include "../Components/CharacterControlledComponent.h"
+#include "../Components/TargetCameraComponent.h"
 
 #include "../MapLoader/MapLoader.h"
 
@@ -17,6 +18,7 @@
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/KeyboardControlSystem.h"
+#include "../Systems/CameraMovementSystem.h"
 
 #include "../Systems/Debug/RenderBoxColliderSystem.h"
 
@@ -24,6 +26,10 @@
 #include "../Events/KeyPressedEvent.h"
 #include "../Events/KeyReleasedEvent.h"
 
+int Game::windowWidth = 800;
+int Game::windowHeight = 600;
+int Game::mapWidth = 0;
+int Game::mapHeight = 0;
 
 Game::Game() {
     Logger::Log("Game constructed");    
@@ -49,8 +55,7 @@ void Game::Initialize() {
     
     // 设置游戏逻辑分辨率
     windowWidth = 800;
-    windowHeight = 640;
-
+    windowHeight = 600;
     window = SDL_CreateWindow(
         "QQh Game", 
         SDL_WINDOWPOS_CENTERED,
@@ -72,7 +77,7 @@ void Game::Initialize() {
     
     SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     
-    // 设置逻辑渲染尺寸为800x600，SDL会自动缩放到实际屏幕尺寸
+    camera = {0, 0, windowWidth, windowHeight};
     SDL_RenderSetLogicalSize(renderer, windowWidth, windowHeight);
 
     isRunning = true;
@@ -93,7 +98,7 @@ void Game::LoadLevel(int level = 1) {
     registry->AddSystem<AnimationSystem>();
     registry->AddSystem<CollisionSystem>();
     registry->AddSystem<KeyboardControlSystem>();
-
+    registry->AddSystem<CameraMovementSystem>();
     registry->AddSystem<RenderBoxColliderSystem>();
 
     // Subscribe to events (只需要订阅一次)
@@ -114,13 +119,15 @@ void Game::LoadLevel(int level = 1) {
 
             int textureWidth, textureHeight;
             SDL_QueryTexture(assetStore->GetTexture("tilemap-image"), nullptr, nullptr, &textureWidth, &textureHeight);
-            int tileSize = textureWidth / 10;
+            int tileSize = 32;
 
             tile.AddComponent<SpriteComponent>("tilemap-image", tileSize, tileSize, 0, col * tileSize, row * tileSize);
             tile.AddComponent<TransformComponent>(glm::vec2(j * tileSize * tileScale, i * tileSize * tileScale), glm::vec2(tileScale, tileScale), 0.0);
             tiles[i * map[i].size() + j] = tile;
         }
     }
+    mapWidth = map[0].size() * 32;
+    mapHeight = map.size() * 32;
 
     // add entities
     Entity chopper = registry->CreateEntity();
@@ -139,9 +146,10 @@ void Game::LoadLevel(int level = 1) {
     chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2, 0, 0);
     chopper.AddComponent<AnimationComponent>(2, 15);
     chopper.AddComponent<CharacterControlledComponent>(100.0f);
+    chopper.AddComponent<TargetCameraComponent>();
 
     radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 100, 10.0), glm::vec2(1.0, 1.0));
-    radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 3);
+    radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 3, 0, 0, true);
     radar.AddComponent<AnimationComponent>(8, 1);
 
     truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
@@ -199,8 +207,8 @@ void Game::Update() {
     // Invoke System的逻辑Update
     registry->GetSystem<MovementSystem>().Update(deltaTime);
     registry->GetSystem<AnimationSystem>().Update();
-
     registry->GetSystem<CollisionSystem>().Update(eventBus); // CollisionSystem会发起事件
+    registry->GetSystem<CameraMovementSystem>().Update(camera);
 
     // 等所有系统update完成，update Registry中的waiting list中要新加入的entity
     registry->Update();
@@ -211,11 +219,11 @@ void Game::Render() {
     SDL_RenderClear(renderer);
 
     // Invoke所有要渲染的System的Update
-    registry->GetSystem<RenderSystem>().Update(renderer, assetStore);
+    registry->GetSystem<RenderSystem>().Update(renderer, assetStore, camera);
 
     // 如果debug模式开启，则Invoke所有需要渲染的Debug System的Update
     if (isDebugMode) {
-        registry->GetSystem<RenderBoxColliderSystem>().Update(renderer);
+        registry->GetSystem<RenderBoxColliderSystem>().Update(renderer, camera);
     }
 
     SDL_RenderPresent(renderer);

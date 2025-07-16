@@ -25,7 +25,7 @@ class RenderBoxColliderSystem : public System {
             eventBus->Subscribe<CollisionEvent>(this, &RenderBoxColliderSystem::OnCollision);
         }
 
-        void Update(SDL_Renderer* renderer) {
+        void Update(SDL_Renderer* renderer, SDL_Rect& camera) {
             std::vector<Entity> entities = GetSystemEntities();
             for (int i = 0; i < entities.size(); i++) {
                 Entity entity = entities[i];
@@ -33,8 +33,8 @@ class RenderBoxColliderSystem : public System {
                 BoxColliderComponent boxCollider = entity.GetComponent<BoxColliderComponent>();
 
                 SDL_Rect collider_rect = {
-                    static_cast<int>(transform.position.x + boxCollider.offset.x),
-                    static_cast<int>(transform.position.y + boxCollider.offset.y),
+                    static_cast<int>(transform.position.x + boxCollider.offset.x - camera.x),
+                    static_cast<int>(transform.position.y + boxCollider.offset.y - camera.y),
                     static_cast<int>(boxCollider.size.x * transform.scale.x),
                     static_cast<int>(boxCollider.size.y * transform.scale.y)
                 };

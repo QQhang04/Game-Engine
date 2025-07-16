@@ -8,9 +8,10 @@ struct SpriteComponent {
     std::string textureId;
     int width, height;
     int zIndex;
+    bool isFixed;
     SDL_Rect srcRect;
 
-    SpriteComponent(const std::string& textureId = "", int w = 0, int h = 0, int zIndex = 0, int srcRectX = 0, int srcRectY = 0) : textureId(textureId), width(w), height(h), zIndex(zIndex) {
+    SpriteComponent(const std::string& textureId = "", int w = 0, int h = 0, int zIndex = 0, int srcRectX = 0, int srcRectY = 0, bool isFixed = false) : textureId(textureId), width(w), height(h), zIndex(zIndex), isFixed(isFixed) {
         srcRect.x = srcRectX;
         srcRect.y = srcRectY;
         srcRect.w = width;

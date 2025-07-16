@@ -16,12 +16,10 @@ class Game {
     private:
         SDL_Window* window;
         SDL_Renderer* renderer;
+        SDL_Rect camera;
 
         bool isRunning;
         bool isDebugMode;
-
-        int windowWidth;
-        int windowHeight;
 
         int millisecsPreviousFrame;
 
@@ -32,6 +30,11 @@ class Game {
     public:
         Game();
         ~Game();
+
+        static int windowWidth;
+        static int windowHeight;
+        static int mapWidth;
+        static int mapHeight;
 
         void Initialize();
         void LoadLevel(int level);
