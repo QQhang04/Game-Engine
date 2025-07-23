@@ -12,3 +12,4 @@ Icon
 gameEngine
 *.o
 *.out 
+assets/.DS_Store

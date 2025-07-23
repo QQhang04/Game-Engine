@@ -10,6 +10,7 @@
 #include "../Components/BoxColliderComponent.h"
 #include "../Components/CharacterControlledComponent.h"
 #include "../Components/TargetCameraComponent.h"
+#include "../Components/HealthComponent.h"
 
 #include "../MapLoader/MapLoader.h"
 
@@ -19,6 +20,8 @@
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/KeyboardControlSystem.h"
 #include "../Systems/CameraMovementSystem.h"
+#include "../Systems/ProjectileSystem.h"
+#include "../Systems/ProjectileLifecycleSystem.h"
 
 #include "../Systems/Debug/RenderBoxColliderSystem.h"
 
@@ -91,6 +94,7 @@ void Game::LoadLevel(int level = 1) {
     assetStore->AddTexture(renderer, "tilemap-image", "./assets/tilemaps/jungle.png");
     assetStore->AddTexture(renderer, "chopper-image", "./assets/images/chopper-spritesheet.png");
     assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
+    assetStore->AddTexture(renderer, "bullet-texture", "./assets/images/bullet.png");
 
     // add systems
     registry->AddSystem<MovementSystem>();
@@ -100,6 +104,8 @@ void Game::LoadLevel(int level = 1) {
     registry->AddSystem<KeyboardControlSystem>();
     registry->AddSystem<CameraMovementSystem>();
     registry->AddSystem<RenderBoxColliderSystem>();
+    registry->AddSystem<ProjectileSystem>();
+    registry->AddSystem<ProjectileLifecycleSystem>();
 
     // Subscribe to events (只需要订阅一次)
     registry->GetSystem<RenderBoxColliderSystem>().SubscribeToEvents(eventBus);
@@ -140,6 +146,8 @@ void Game::LoadLevel(int level = 1) {
     tank.AddComponent<RigidBodyComponent>(glm::vec2(-15.0, 0.0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1, 0, 0);
     tank.AddComponent<BoxColliderComponent>(glm::vec2(32.0, 32.0), glm::vec2(0.0, 0.0));
+    tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(50.0, 0.0), 1000, 1000, 10, true);
+    tank.AddComponent<HealthComponent>(100);
 
     chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 100.0), glm::vec2(1.0, 1.0));
     chopper.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
@@ -147,6 +155,7 @@ void Game::LoadLevel(int level = 1) {
     chopper.AddComponent<AnimationComponent>(2, 15);
     chopper.AddComponent<CharacterControlledComponent>(100.0f);
     chopper.AddComponent<TargetCameraComponent>();
+    chopper.AddComponent<HealthComponent>(100);
 
     radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 100, 10.0), glm::vec2(1.0, 1.0));
     radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 3, 0, 0, true);
@@ -156,6 +165,7 @@ void Game::LoadLevel(int level = 1) {
     truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
     truck.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0), glm::vec2(1.0, 1.0), 0.0);
     truck.AddComponent<BoxColliderComponent>(glm::vec2(32.0, 32.0), glm::vec2(0.0, 0.0));
+    truck.AddComponent<HealthComponent>(100);
 }
 
 
@@ -207,6 +217,8 @@ void Game::Update() {
     // Invoke System的逻辑Update
     registry->GetSystem<MovementSystem>().Update(deltaTime);
     registry->GetSystem<AnimationSystem>().Update();
+    registry->GetSystem<ProjectileLifecycleSystem>().Update(registry);
+    registry->GetSystem<ProjectileSystem>().Update(registry);
     registry->GetSystem<CollisionSystem>().Update(eventBus); // CollisionSystem会发起事件
     registry->GetSystem<CameraMovementSystem>().Update(camera);
 

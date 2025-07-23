@@ -52,8 +52,6 @@ class RenderBoxColliderSystem : public System {
         }
 
         void OnCollision(CollisionEvent& event) {
-            Logger::LogEvent("on collision for entities " + std::to_string(event.entityA.GetId()) + " and " + std::to_string(event.entityB.GetId()));
-            // 记录碰撞的实体
             collidingEntities.insert(event.entityA.GetId());
             collidingEntities.insert(event.entityB.GetId());
         }

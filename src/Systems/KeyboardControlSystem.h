@@ -51,8 +51,6 @@ class KeyboardControlSystem : public System {
         void OnKeyPressed(KeyPressedEvent& event) {
             std::string keyCode = std::to_string(event.symbol);
             std::string keySymbol(1, event.symbol);
-
-            Logger::LogEvent("接收到Key pressed event: " + keyCode + " " + keySymbol);
             
             // 更新按键状态
             if (event.symbol == SDLK_LEFT || event.symbol == SDLK_a) {
