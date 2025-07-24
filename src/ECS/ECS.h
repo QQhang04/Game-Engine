@@ -47,7 +47,7 @@ class Entity {
         template<typename TComponent> bool HasComponent() const;
         template<typename TComponent> TComponent& GetComponent() const;
 
-        class Registry* registry; // forward declaration(modern cpp syntax)
+        class Registry* registry;
 };
 
 class System {

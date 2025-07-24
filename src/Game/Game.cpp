@@ -110,6 +110,7 @@ void Game::LoadLevel(int level = 1) {
     // Subscribe to events (只需要订阅一次)
     registry->GetSystem<RenderBoxColliderSystem>().SubscribeToEvents(eventBus);
     registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(eventBus);
+    registry->GetSystem<ProjectileSystem>().SubscribeToEvents(eventBus);
     
     Logger::Log("Systems added");
 
@@ -156,6 +157,7 @@ void Game::LoadLevel(int level = 1) {
     chopper.AddComponent<CharacterControlledComponent>(100.0f);
     chopper.AddComponent<TargetCameraComponent>();
     chopper.AddComponent<HealthComponent>(100);
+    chopper.AddComponent<ProjectileEmitterComponent>(glm::vec2(400.0, 0.0), 100, 5000, 10, true);
 
     radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 100, 10.0), glm::vec2(1.0, 1.0));
     radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 3, 0, 0, true);
@@ -193,7 +195,7 @@ void Game::HandleInput() {
                 if (event.key.keysym.sym == SDLK_ESCAPE) {
                     isRunning = false;
                 }
-                if (event.key.keysym.sym == SDLK_d) {
+                if (event.key.keysym.sym == SDLK_b) {
                     isDebugMode = !isDebugMode;
                 }
                 eventBus->EmitEvent<KeyPressedEvent>(event.key.keysym.sym);

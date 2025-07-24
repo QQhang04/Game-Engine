@@ -131,18 +131,20 @@ class KeyboardControlSystem : public System {
                     rigidBody.velocity = glm::vec2(0.0f, 0.0f);
                 }
 
-                // 根据速度方向更新sprite的row
+                // 根据速度方向更新sprite的row和角色方向
                 int colIndex = 0;
                 if (isAnyPressed) {
                     if (finalDir.x != 0.0f) {
                         colIndex = finalDir.x > 0 ? 1 : 3;
+                        characterControlled.currentDirection = finalDir.x > 0 ? Direction::RIGHT : Direction::LEFT;
                     } 
                     else if (finalDir.y != 0.0f) {
                         colIndex = finalDir.y > 0 ? 2 : 0;
-                    } 
+                        characterControlled.currentDirection = finalDir.y > 0 ? Direction::DOWN : Direction::UP;
+                    }
 
                     sprite.srcRect.y = sprite.height * colIndex;
-                } 
+                }
             }
         }
 };
