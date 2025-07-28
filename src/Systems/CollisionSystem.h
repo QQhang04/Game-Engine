@@ -8,7 +8,11 @@
 
 #include "../EventBus/EventBus.h"
 #include "../Events/CollisionEvent.h"
+#include "../Events/ProjectileCollisionEvent.h"
 
+// TODO 使用四叉树、扫略裁剪来优化碰撞检测 
+// TODO 引入更多碰撞检测的算法 包括连续碰撞检测
+// TODO 地图的碰撞系统使用SDF有向距离场算法不使用碰撞体进行优化
 class CollisionSystem : public System {
     public:
         CollisionSystem() {
@@ -24,6 +28,7 @@ class CollisionSystem : public System {
                 TransformComponent transform1 = entity1.GetComponent<TransformComponent>();
                 BoxColliderComponent boxCollider1 = entity1.GetComponent<BoxColliderComponent>();
 
+                // TODO 使用layer进行过滤
                 for (int j = i + 1; j < entities.size(); j++) {
                     Entity entity2 = entities[j];
                     TransformComponent transform2 = entity2.GetComponent<TransformComponent>();
@@ -40,6 +45,15 @@ class CollisionSystem : public System {
                     );
                     if (isColliding) {
                         eventBus->EmitEvent<CollisionEvent>(entity1, entity2);
+                        Logger::Log("CollisionSystem: OnCollision " + entity1.GetGroup() + " " + entity2.GetGroup());
+                        if (entity1.GetGroup() == "projectile") {
+                            Logger::Log("发起子弹射击事件1");
+                            eventBus->EmitEvent<ProjectileCollisionEvent>(entity1, entity2);
+                        }
+                        else if (entity2.GetGroup() == "projectile") {
+                            Logger::Log("发起被子弹射击事件2");
+                            eventBus->EmitEvent<ProjectileCollisionEvent>(entity2, entity1);
+                        }
                     }
                 }
             }

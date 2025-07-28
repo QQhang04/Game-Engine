@@ -47,6 +47,16 @@ class Entity {
         template<typename TComponent> bool HasComponent() const;
         template<typename TComponent> TComponent& GetComponent() const;
 
+        void AddTag(const std::string& tag);
+        bool RemoveTag();
+        bool HasTag(const std::string& tag) const;
+        std::string GetTag() const;
+
+        void AddToGroup(const std::string& group);
+        bool RemoveFromGroup();
+        bool BelongToGroup(const std::string& group) const;
+        std::string GetGroup() const;
+
         class Registry* registry;
 };
 
@@ -135,6 +145,13 @@ class Registry {
         std::set<Entity> entitiesToAdd;
         std::set<Entity> entitiesToRemove;
 
+        // 管理entity的tag和group
+		std::unordered_map<std::string, Entity> entityPerTag;
+        std::unordered_map<int, std::string> tagPerEntity;
+
+		std::unordered_map<std::string, std::set<Entity>> entitiesPerGroup;
+        std::unordered_map<int, std::string> groupPerEntity;
+
     public:
         Registry() {
             Logger::Log("Registry constructed");
@@ -163,7 +180,19 @@ class Registry {
 
         void AddEntityToSystems(Entity entity);
         void RemoveEntityFromSystems(Entity entity);
-        
+
+        // Tag Management
+        void AddTag(Entity entity, const std::string& tag);
+        bool RemoveTag(Entity entity);
+        bool HasTag(Entity entity, const std::string& tag) const;
+        std::string GetTag(Entity entity) const;
+
+        // Group Management
+        void AddEntityToGroup(Entity entity, const std::string& group);
+        bool RemoveEntityFromGroup(Entity entity);
+        std::vector<Entity> GetEntitiesByGroup(const std::string& group) const;
+        bool BelongToGroup(Entity entity, const std::string& group) const;
+        std::string GetGroup(Entity entity) const;
 };
 
 // SYSTEM IMPL
@@ -201,7 +230,7 @@ void Registry::AddComponent(Entity entity, TArgs&& ...args) {
     }
     entityComponentSignatures[entityId].set(componentId);
 
-    Logger::Log("Add Component " + std::string(typeid(TComponent).name()) + "id = " + std::to_string(componentId) + " to Entity id = " + std::to_string(entityId));
+    // Logger::Log("Add Component " + std::string(typeid(TComponent).name()) + "id = " + std::to_string(componentId) + " to Entity id = " + std::to_string(entityId));
 }
 
 template <typename TComponent>

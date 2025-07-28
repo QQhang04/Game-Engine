@@ -45,9 +45,11 @@ public:
                     const auto& characterControlled = entity.GetComponent<CharacterControlledComponent>();
                     auto& emitter = entity.GetComponent<ProjectileEmitterComponent>();
                     if (emitter.lastEmissionTime + emitter.repeatFrequency < SDL_GetTicks()) {
-                        Logger::Log("Create Projectile");
                         auto projectile = entity.registry->CreateEntity();
-
+                        // projectile.AddTag("projectile");
+                        projectile.AddToGroup("projectile");
+                        Logger::Log("创造projectile 并且Group为projesctile");
+                        Logger::Log("entity.GetGroup() " + projectile.GetGroup());
                         auto& transform = entity.GetComponent<TransformComponent>();
 
                         glm::vec2 projectilePosition = transform.position;
@@ -76,14 +78,15 @@ public:
 
     void Update(std::unique_ptr<Registry>& registry) {
         for (auto entity : GetSystemEntities()) {
-            if (entity.HasComponent<CharacterControlledComponent>()) {
+            if (registry->HasTag(entity, "player")) {
                 continue;
             }
             auto& emitter = entity.GetComponent<ProjectileEmitterComponent>();
             if (emitter.lastEmissionTime + emitter.repeatFrequency < SDL_GetTicks()) {
                 // TODO 用对象池进行优化
-                Logger::Log("Create Projectile");
                 auto projectile = registry->CreateEntity();
+                // projectile.AddTag("projectile");
+                projectile.AddToGroup("projectile");
 
                 auto& transform = entity.GetComponent<TransformComponent>();
 
