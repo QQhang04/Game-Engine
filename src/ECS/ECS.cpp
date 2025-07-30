@@ -93,7 +93,12 @@ void Registry::Update() {
         RemoveTag(entity);
         RemoveEntityFromGroup(entity);
         
+        // 清理entity的component信息
         entityComponentSignatures[entity.GetId()].reset();
+        for (auto pool : componentPools) {
+            pool -> RemoveEntityComponent(entity.GetId());
+        }
+
         freeEntityIds.push_back(entity.GetId());
     }
     entitiesToRemove.clear();

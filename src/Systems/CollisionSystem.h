@@ -45,13 +45,10 @@ class CollisionSystem : public System {
                     );
                     if (isColliding) {
                         eventBus->EmitEvent<CollisionEvent>(entity1, entity2);
-                        Logger::Log("CollisionSystem: OnCollision " + entity1.GetGroup() + " " + entity2.GetGroup());
                         if (entity1.GetGroup() == "projectile") {
-                            Logger::Log("发起子弹射击事件1");
                             eventBus->EmitEvent<ProjectileCollisionEvent>(entity1, entity2);
                         }
                         else if (entity2.GetGroup() == "projectile") {
-                            Logger::Log("发起被子弹射击事件2");
                             eventBus->EmitEvent<ProjectileCollisionEvent>(entity2, entity1);
                         }
                     }

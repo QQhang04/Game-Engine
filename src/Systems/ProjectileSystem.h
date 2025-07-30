@@ -48,8 +48,6 @@ public:
                         auto projectile = entity.registry->CreateEntity();
                         // projectile.AddTag("projectile");
                         projectile.AddToGroup("projectile");
-                        Logger::Log("创造projectile 并且Group为projesctile");
-                        Logger::Log("entity.GetGroup() " + projectile.GetGroup());
                         auto& transform = entity.GetComponent<TransformComponent>();
 
                         glm::vec2 projectilePosition = transform.position;

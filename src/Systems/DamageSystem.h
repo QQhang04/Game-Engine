@@ -26,8 +26,6 @@ class DamageSystem : public System {
                 return;
             }
 
-            Logger::Log("处理子弹碰撞事件");
-
             // 目标必须有血量
             if (!target.HasComponent<HealthComponent>()) {
                 return;
