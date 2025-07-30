@@ -96,6 +96,9 @@ void Registry::Update() {
         // 清理entity的component信息
         entityComponentSignatures[entity.GetId()].reset();
         for (auto pool : componentPools) {
+            if (!pool){
+                return;
+            }
             pool -> RemoveEntityComponent(entity.GetId());
         }
 

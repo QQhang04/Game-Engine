@@ -113,6 +113,8 @@ class Pool : public IPool {
 
         void Clear() {
             data.clear();
+            entityIdToPoolIndex.clear();
+            poolIndexToEntityId.clear();
             size = 0;
         }
 
