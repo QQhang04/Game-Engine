@@ -11,6 +11,7 @@
 #include "../Components/CharacterControlledComponent.h"
 #include "../Components/TargetCameraComponent.h"
 #include "../Components/HealthComponent.h"
+#include "../Components/TextLabelComponent.h"
 
 #include "../MapLoader/MapLoader.h"
 
@@ -23,6 +24,7 @@
 #include "../Systems/ProjectileSystem.h"
 #include "../Systems/ProjectileLifecycleSystem.h"
 #include "../Systems/DamageSystem.h"
+#include "../Systems/RenderTextSystem.h"
 
 #include "../Systems/Debug/RenderBoxColliderSystem.h"
 
@@ -56,6 +58,11 @@ void Game::Initialize() {
     }
     SDL_DisplayMode displayMode;
     SDL_GetCurrentDisplayMode(0, &displayMode);
+
+    if (TTF_Init() != 0) {
+        Logger::Err(std::string("TTF_Init Error: ") + TTF_GetError());
+        return;
+    }
     
     // 设置游戏逻辑分辨率
     windowWidth = 800;
@@ -96,7 +103,7 @@ void Game::LoadLevel(int level = 1) {
     assetStore->AddTexture(renderer, "chopper-image", "./assets/images/chopper-spritesheet.png");
     assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
     assetStore->AddTexture(renderer, "bullet-texture", "./assets/images/bullet.png");
-
+    assetStore->AddFont("charriot-font", "./assets/fonts/charriot.ttf", 16);
     // add systems
     registry->AddSystem<MovementSystem>();
     registry->AddSystem<RenderSystem>();    
@@ -108,6 +115,7 @@ void Game::LoadLevel(int level = 1) {
     registry->AddSystem<ProjectileSystem>();
     registry->AddSystem<ProjectileLifecycleSystem>();
     registry->AddSystem<DamageSystem>();
+    registry->AddSystem<RenderTextSystem>();
 
     // Subscribe to events (只需要订阅一次)
     registry->GetSystem<RenderBoxColliderSystem>().SubscribeToEvents(eventBus);
@@ -143,6 +151,10 @@ void Game::LoadLevel(int level = 1) {
     Entity truck = registry->CreateEntity();
     Entity radar = registry->CreateEntity();
 
+    Entity label = registry->CreateEntity();
+    // 放在屏幕中间偏上的位置
+    label.AddComponent<TextLabelComponent>(glm::vec2(windowWidth / 2.0f - 40.0f, 20.0f), "Hello World", "charriot-font", SDL_Color{255, 255, 255, 255}, true);
+    
     // add tags or groups
     chopper.AddTag("player");
     tank.AddToGroup("enemy");
@@ -240,6 +252,7 @@ void Game::Render() {
 
     // Invoke所有要渲染的System的Update
     registry->GetSystem<RenderSystem>().Update(renderer, assetStore, camera);
+    registry->GetSystem<RenderTextSystem>().Update(renderer, assetStore);
 
     // 如果debug模式开启，则Invoke所有需要渲染的Debug System的Update
     if (isDebugMode) {
