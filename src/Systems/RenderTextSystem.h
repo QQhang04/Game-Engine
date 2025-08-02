@@ -14,28 +14,32 @@ class RenderTextSystem : public System {
 
         void Update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore) {
             for (auto entity : GetSystemEntities()) {
-                const auto& textLabel = entity.GetComponent<TextLabelComponent>();
-                
-                 SDL_Surface* surface = TTF_RenderText_Blended(
-                    assetStore->GetFont(textLabel.assetId),
-                    textLabel.text.c_str(),
-                    textLabel.color
-                );
-                SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-                SDL_FreeSurface(surface);
-
-                int labelWidth, labelHeight;
-                SDL_QueryTexture(texture, nullptr, nullptr, &labelWidth, &labelHeight);
-
-                SDL_Rect dstRect = {
-                    static_cast<int>(textLabel.position.x),
-                    static_cast<int>(textLabel.position.y),
-                    labelWidth,
-                    labelHeight
-                };
-
-                SDL_RenderCopy(renderer, texture, nullptr, &dstRect);
-                SDL_DestroyTexture(texture);
+                auto& textLabel = entity.GetComponent<TextLabelComponent>();
+                if (textLabel.dirty) {
+                    if (textLabel.texture) {
+                        SDL_DestroyTexture(textLabel.texture);
+                        textLabel.texture = nullptr;
+                    }
+                    SDL_Surface* surface = TTF_RenderText_Blended(
+                        assetStore->GetFont(textLabel.assetId),
+                        textLabel.text.c_str(),
+                        textLabel.color
+                    );
+                    textLabel.texture = SDL_CreateTextureFromSurface(renderer, surface);
+                    SDL_FreeSurface(surface);
+                    textLabel.dirty = false;
+                }
+                if (textLabel.texture) {
+                    int labelWidth, labelHeight;
+                    SDL_QueryTexture(textLabel.texture, nullptr, nullptr, &labelWidth, &labelHeight);
+                    SDL_Rect dstRect = {
+                        static_cast<int>(textLabel.position.x),
+                        static_cast<int>(textLabel.position.y),
+                        labelWidth,
+                        labelHeight
+                    };
+                    SDL_RenderCopy(renderer, textLabel.texture, nullptr, &dstRect);
+                }
             }
         }
 };

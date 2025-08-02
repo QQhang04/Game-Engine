@@ -16,6 +16,8 @@ typedef std::bitset<MAX_COMPONENTS> Signature;
 struct IComponent {
     protected:
         static int nextId;
+    public:
+        virtual void OnRemove() {}
 };
 
 template<typename TComponent>
@@ -67,7 +69,7 @@ class System {
 
     public:
         System() = default;
-        ~System() = default;
+        virtual ~System() = default;
 
         void AddEntityToSystem(Entity entity);
         void RemoveEntityFromSystem(Entity entity);
@@ -75,6 +77,8 @@ class System {
         const Signature& GetComponentSignature() const;
 
         template<typename TComponent> void RequireComponent();
+
+        virtual void OnRemove() {}
 };
 
 class IPool {
@@ -280,6 +284,10 @@ void Registry::RemoveComponent(Entity entity) {
 
     auto componentPool = std::static_pointer_cast<Pool<TComponent>>(componentPools[componentId]);
     componentPool->Remove(entityId);
+
+    // 调用组件的OnRemove方法
+    auto& component = componentPool->Get(entityId);
+    component.OnRemove();
 }
 
 template <typename TComponent>
@@ -307,13 +315,17 @@ template <typename TSystem, typename ...TArgs>
 void Registry::AddSystem(TArgs&& ...args) {
     std::shared_ptr<TSystem> newSystem = std::make_shared<TSystem>(std::forward<TArgs>(args)...);
     systems.insert(std::make_pair(std::type_index(typeid(TSystem)), newSystem));
-    Logger::Log("Add System " + std::string(typeid(TSystem).name()));
 }
 
 template <typename TSystem>
 void Registry::RemoveSystem() {
+    if (systems.find(std::type_index(typeid(TSystem))) == systems.end()) {
+        return;
+    }
+
+    auto system = systems.find(std::type_index(typeid(TSystem)));
+    system->second->OnRemove();
     systems.erase(std::type_index(typeid(TSystem)));
-    Logger::Log("Remove System " + std::string(typeid(TSystem).name()));
 }
 
 template <typename TSystem>

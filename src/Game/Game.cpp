@@ -25,6 +25,7 @@
 #include "../Systems/ProjectileLifecycleSystem.h"
 #include "../Systems/DamageSystem.h"
 #include "../Systems/RenderTextSystem.h"
+#include "../Systems/RenderHealthBarSystem.h"
 
 #include "../Systems/Debug/RenderBoxColliderSystem.h"
 
@@ -104,6 +105,8 @@ void Game::LoadLevel(int level = 1) {
     assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
     assetStore->AddTexture(renderer, "bullet-texture", "./assets/images/bullet.png");
     assetStore->AddFont("charriot-font", "./assets/fonts/charriot.ttf", 16);
+    assetStore->AddFont("health-bar-font", "./assets/fonts/charriot.ttf", 12);
+    assetStore->AddFont("pico8-font-5", "./assets/fonts/charriot.ttf", 12);
     // add systems
     registry->AddSystem<MovementSystem>();
     registry->AddSystem<RenderSystem>();    
@@ -116,7 +119,7 @@ void Game::LoadLevel(int level = 1) {
     registry->AddSystem<ProjectileLifecycleSystem>();
     registry->AddSystem<DamageSystem>();
     registry->AddSystem<RenderTextSystem>();
-
+    registry->AddSystem<RenderHealthBarSystem>();
     // Subscribe to events (只需要订阅一次)
     registry->GetSystem<RenderBoxColliderSystem>().SubscribeToEvents(eventBus);
     registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(eventBus);
@@ -253,7 +256,7 @@ void Game::Render() {
     // Invoke所有要渲染的System的Update
     registry->GetSystem<RenderSystem>().Update(renderer, assetStore, camera);
     registry->GetSystem<RenderTextSystem>().Update(renderer, assetStore);
-
+    registry->GetSystem<RenderHealthBarSystem>().Update(renderer, assetStore, camera);
     // 如果debug模式开启，则Invoke所有需要渲染的Debug System的Update
     if (isDebugMode) {
         registry->GetSystem<RenderBoxColliderSystem>().Update(renderer, camera);
@@ -263,6 +266,9 @@ void Game::Render() {
 }
 
 void Game::Destroy() {
+    // 所有系统析构
+    
+    // 所有component析构
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

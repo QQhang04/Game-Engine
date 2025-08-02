@@ -16,7 +16,6 @@ struct SpriteComponent {
         srcRect.y = srcRectY;
         srcRect.w = width;
         srcRect.h = height;
-        this -> srcRect = srcRect;
     }
 };
 
