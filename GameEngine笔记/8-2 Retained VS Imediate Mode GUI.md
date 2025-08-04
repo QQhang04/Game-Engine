@@ -74,6 +74,8 @@ Retained mode GUI 是一种图形用户界面（GUI）编程模式，与 immedia
 
 ![image-20250804111218333](/Users/qqhang/Library/Application Support/typora-user-images/image-20250804111218333.png)
 
+<img src="/Users/qqhang/Library/Application Support/typora-user-images/image-20250804113406680.png" alt="image-20250804113406680" style="zoom:50%;" />
+
 2. 在Initialize中初始化imgui
 
 ```cpp

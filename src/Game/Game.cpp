@@ -26,6 +26,7 @@
 #include "../Systems/DamageSystem.h"
 #include "../Systems/RenderTextSystem.h"
 #include "../Systems/RenderHealthBarSystem.h"
+#include "../Systems/RenderGUISystem.h"
 
 #include "../Systems/Debug/RenderBoxColliderSystem.h"
 
@@ -122,6 +123,7 @@ void Game::LoadLevel(int level = 1) {
     registry->AddSystem<DamageSystem>();
     registry->AddSystem<RenderTextSystem>();
     registry->AddSystem<RenderHealthBarSystem>();
+    registry->AddSystem<RenderGUISystem>();
     // Subscribe to events (只需要订阅一次)
     registry->GetSystem<RenderBoxColliderSystem>().SubscribeToEvents(eventBus);
     registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(eventBus);
@@ -166,14 +168,14 @@ void Game::LoadLevel(int level = 1) {
     truck.AddToGroup("enemy");
 
     // add components
-    tank.AddComponent<TransformComponent>(glm::vec2(100.0, 10.0), glm::vec2(1.0, 1.0));
+    tank.AddComponent<TransformComponent>(glm::vec2(100.0, 10.0), glm::vec2(2.0, 2.0));
     tank.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1, 0, 0);
     tank.AddComponent<BoxColliderComponent>(glm::vec2(32.0, 32.0), glm::vec2(0.0, 0.0));
     // tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(50.0, 0.0), 1000, 1000, 10, true);
     tank.AddComponent<HealthComponent>(100);
 
-    chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 100.0), glm::vec2(1.0, 1.0));
+    chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 100.0), glm::vec2(2.0, 2.0));
     chopper.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
     chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2, 0, 0);
     chopper.AddComponent<AnimationComponent>(2, 15);
@@ -188,7 +190,7 @@ void Game::LoadLevel(int level = 1) {
 
     truck.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
     truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
-    truck.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0), glm::vec2(1.0, 1.0), 0.0);
+    truck.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0), glm::vec2(2.0, 2.0), 0.0);
     truck.AddComponent<BoxColliderComponent>(glm::vec2(32.0, 32.0), glm::vec2(0.0, 0.0));
     truck.AddComponent<HealthComponent>(100);
 }
@@ -271,11 +273,7 @@ void Game::Render() {
     // 如果debug模式开启，则Invoke所有需要渲染的Debug System的Update
     if (isDebugMode) {
         registry->GetSystem<RenderBoxColliderSystem>().Update(renderer, camera);
-
-        ImGui::NewFrame();
-        ImGui::ShowDemoWindow();
-        ImGui::Render();
-        ImGuiSDL::Render(ImGui::GetDrawData());
+        registry->GetSystem<RenderGUISystem>().Update(registry, camera);
     }
 
     SDL_RenderPresent(renderer);
