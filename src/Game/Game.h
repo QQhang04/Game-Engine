@@ -6,6 +6,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <glm/glm.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_sdl.h>
+#include <imgui/imgui_impl_sdl.h>
 #include "../AssetStore/AssetStore.h"
 #include "../EventBus/EventBus.h"
 

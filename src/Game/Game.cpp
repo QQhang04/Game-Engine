@@ -33,8 +33,8 @@
 #include "../Events/KeyPressedEvent.h"
 #include "../Events/KeyReleasedEvent.h"
 
-int Game::windowWidth = 800;
-int Game::windowHeight = 600;
+int Game::windowWidth;
+int Game::windowHeight;
 int Game::mapWidth = 0;
 int Game::mapHeight = 0;
 
@@ -57,41 +57,43 @@ void Game::Initialize() {
         Logger::Err(std::string("SDL_Init Error: ") + SDL_GetError());
         return;
     }
-    SDL_DisplayMode displayMode;
-    SDL_GetCurrentDisplayMode(0, &displayMode);
 
     if (TTF_Init() != 0) {
         Logger::Err(std::string("TTF_Init Error: ") + TTF_GetError());
         return;
     }
     
-    // 设置游戏逻辑分辨率
-    windowWidth = 800;
-    windowHeight = 600;
+    SDL_DisplayMode displayMode;
+    SDL_GetCurrentDisplayMode(0, &displayMode);
+    windowWidth = displayMode.w;
+    windowHeight = displayMode.h;
     window = SDL_CreateWindow(
-        "QQh Game", 
+        NULL,
         SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED, 
-        displayMode.w, 
-        displayMode.h, 
+        SDL_WINDOWPOS_CENTERED,
+        windowWidth,
+        windowHeight,
         SDL_WINDOW_BORDERLESS
     );
     if (!window) {
-        Logger::Err(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
+        Logger::Err("Error creating SDL window.");
         return;
     }
-
     renderer = SDL_CreateRenderer(window, -1, 0);
     if (!renderer) {
-        Logger::Err(std::string("SDL_CreateRenderer Error: ") + SDL_GetError());
+        Logger::Err("Error creating SDL renderer.");
         return;
     }
-    
-    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    
-    camera = {0, 0, windowWidth, windowHeight};
-    SDL_RenderSetLogicalSize(renderer, windowWidth, windowHeight);
 
+    // Initialize the ImGui context
+    ImGui::CreateContext();
+    ImGuiSDL::Initialize(renderer, windowWidth, windowHeight);
+
+    // Initialize the camera view with the entire screen area
+    camera = {0, 0, windowWidth, windowHeight};
+
+    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+    
     isRunning = true;
 
 }
@@ -127,7 +129,7 @@ void Game::LoadLevel(int level = 1) {
     registry->GetSystem<DamageSystem>().SubscribeToEvents(eventBus);
 
     // load tilemap
-    int tileScale = 1;
+    float tileScale = 2.5;
     std::vector<std::vector<int>> map = MapLoader::LoadMap("./assets/tilemaps/jungle.map");
     std::vector<Entity> tiles(map.size() * map[0].size());
     for (int i = 0; i < map.size(); i++) {
@@ -140,13 +142,13 @@ void Game::LoadLevel(int level = 1) {
             SDL_QueryTexture(assetStore->GetTexture("tilemap-image"), nullptr, nullptr, &textureWidth, &textureHeight);
             int tileSize = 32;
 
-            tile.AddComponent<SpriteComponent>("tilemap-image", tileSize, tileSize, 0, col * tileSize, row * tileSize);
+            tile.AddComponent<SpriteComponent>("tilemap-image", 32, 32, 0, col * 32, row * 32);
             tile.AddComponent<TransformComponent>(glm::vec2(j * tileSize * tileScale, i * tileSize * tileScale), glm::vec2(tileScale, tileScale), 0.0);
             tiles[i * map[i].size() + j] = tile;
         }
     }
-    mapWidth = map[0].size() * 32;
-    mapHeight = map.size() * 32;
+    mapWidth = map[0].size() * 32 * tileScale;
+    mapHeight = map.size() * 32 * tileScale;
 
     // add entities
     Entity chopper = registry->CreateEntity();
@@ -156,7 +158,7 @@ void Game::LoadLevel(int level = 1) {
 
     Entity label = registry->CreateEntity();
     // 放在屏幕中间偏上的位置
-    label.AddComponent<TextLabelComponent>(glm::vec2(windowWidth / 2.0f - 40.0f, 20.0f), "Hello World", "charriot-font", SDL_Color{255, 255, 255, 255}, true);
+    label.AddComponent<TextLabelComponent>(glm::vec2(windowWidth / 2.0f - 40.0f, 50.0f), "Hello World", "charriot-font", SDL_Color{255, 255, 255, 255}, true);
     
     // add tags or groups
     chopper.AddTag("player");
@@ -178,7 +180,7 @@ void Game::LoadLevel(int level = 1) {
     chopper.AddComponent<CharacterControlledComponent>(100.0f);
     chopper.AddComponent<TargetCameraComponent>();
     chopper.AddComponent<HealthComponent>(100);
-    chopper.AddComponent<ProjectileEmitterComponent>(glm::vec2(100.0, 0.0), 100, 5000, 10, true);
+    chopper.AddComponent<ProjectileEmitterComponent>(glm::vec2(400.0, 0.0), 100, 5000, 10, true);
 
     radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 100, 10.0), glm::vec2(1.0, 1.0));
     radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 3, 0, 0, true);
@@ -208,6 +210,15 @@ void Game::Run() {
 void Game::HandleInput() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
+        // 处理ImGui SDL event
+        ImGui_ImplSDL2_ProcessEvent(&event);
+        ImGuiIO& io = ImGui::GetIO();
+        int mouseX, mouseY;
+        const int buttons = SDL_GetMouseState(&mouseX, &mouseY);
+        io.MousePos = ImVec2(mouseX, mouseY);
+        io.MouseDown[0] = buttons & SDL_BUTTON(SDL_BUTTON_LEFT);
+        io.MouseDown[1] = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
+        // 处理SDL event
         switch (event.type) {
             case SDL_QUIT:
                 isRunning = false;
@@ -260,15 +271,19 @@ void Game::Render() {
     // 如果debug模式开启，则Invoke所有需要渲染的Debug System的Update
     if (isDebugMode) {
         registry->GetSystem<RenderBoxColliderSystem>().Update(renderer, camera);
+
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow();
+        ImGui::Render();
+        ImGuiSDL::Render(ImGui::GetDrawData());
     }
 
     SDL_RenderPresent(renderer);
 }
 
 void Game::Destroy() {
-    // 所有系统析构
-    
-    // 所有component析构
+    ImGuiSDL::Deinitialize();
+    ImGui::DestroyContext();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
