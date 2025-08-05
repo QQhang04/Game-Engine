@@ -107,6 +107,7 @@ void Game::LoadLevel(int level = 1) {
     assetStore->AddTexture(renderer, "chopper-image", "./assets/images/chopper-spritesheet.png");
     assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
     assetStore->AddTexture(renderer, "bullet-texture", "./assets/images/bullet.png");
+    assetStore->AddTexture(renderer, "tree-image", "./assets/images/tree.png");
     assetStore->AddFont("charriot-font", "./assets/fonts/charriot.ttf", 16);
     assetStore->AddFont("health-bar-font", "./assets/fonts/charriot.ttf", 12);
     assetStore->AddFont("pico8-font-5", "./assets/fonts/charriot.ttf", 12);
@@ -129,6 +130,7 @@ void Game::LoadLevel(int level = 1) {
     registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(eventBus);
     registry->GetSystem<ProjectileSystem>().SubscribeToEvents(eventBus);
     registry->GetSystem<DamageSystem>().SubscribeToEvents(eventBus);
+    registry->GetSystem<MovementSystem>().SubscribeToEvents(eventBus);
 
     // load tilemap
     float tileScale = 2.5;
@@ -153,10 +155,16 @@ void Game::LoadLevel(int level = 1) {
     mapHeight = map.size() * 32 * tileScale;
 
     // add entities
+    // TODO 完成一个可以切换控制角色的系统
     Entity chopper = registry->CreateEntity();
     Entity tank = registry->CreateEntity();
     Entity truck = registry->CreateEntity();
     Entity radar = registry->CreateEntity();
+
+    // TODO 使用随机数算法随机在草地上生成树木
+    Entity tree1 = registry->CreateEntity();
+    Entity tree2 = registry->CreateEntity();
+    
 
     Entity label = registry->CreateEntity();
     // 放在屏幕中间偏上的位置
@@ -164,12 +172,14 @@ void Game::LoadLevel(int level = 1) {
     
     // add tags or groups
     chopper.AddTag("player");
+    tree1.AddToGroup("obstacle");
+    tree2.AddToGroup("obstacle");
     tank.AddToGroup("enemy");
     truck.AddToGroup("enemy");
 
     // add components
-    tank.AddComponent<TransformComponent>(glm::vec2(100.0, 10.0), glm::vec2(2.0, 2.0));
-    tank.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
+    tank.AddComponent<TransformComponent>(glm::vec2(750.0, 698.0), glm::vec2(2.0, 2.0));
+    tank.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1, 0, 0);
     tank.AddComponent<BoxColliderComponent>(glm::vec2(32.0, 32.0), glm::vec2(0.0, 0.0));
     // tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(50.0, 0.0), 1000, 1000, 10, true);
@@ -193,6 +203,16 @@ void Game::LoadLevel(int level = 1) {
     truck.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0), glm::vec2(2.0, 2.0), 0.0);
     truck.AddComponent<BoxColliderComponent>(glm::vec2(32.0, 32.0), glm::vec2(0.0, 0.0));
     truck.AddComponent<HealthComponent>(100);
+
+    tree1.AddComponent<TransformComponent>(glm::vec2(650, 698), glm::vec2(2, 2));
+    tree1.AddComponent<SpriteComponent>("tree-image", 32, 32, 2);
+    tree1.AddComponent<BoxColliderComponent>(glm::vec2(25, 20), glm::vec2(5, 5));
+    tree1.AddComponent<HealthComponent>(50);
+
+    tree2.AddComponent<TransformComponent>(glm::vec2(850, 698), glm::vec2(2, 2));
+    tree2.AddComponent<SpriteComponent>("tree-image", 32, 32, 2);
+    tree2.AddComponent<BoxColliderComponent>(glm::vec2(25, 20), glm::vec2(5, 5));
+    tree2.AddComponent<HealthComponent>(50);
 }
 
 

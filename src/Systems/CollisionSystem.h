@@ -51,6 +51,13 @@ class CollisionSystem : public System {
                         else if (entity2.GetGroup() == "projectile") {
                             eventBus->EmitEvent<ProjectileCollisionEvent>(entity2, entity1);
                         }
+
+                        if (entity1.GetGroup() == "obstacle") {
+                            eventBus->EmitEvent<ObstacleCollisionEvent>(entity1, entity2);
+                        }
+                        else if (entity2.GetGroup() == "obstacle") {
+                            eventBus->EmitEvent<ObstacleCollisionEvent>(entity2, entity1);
+                        }
                     }
                 }
             }

@@ -8,6 +8,7 @@
 #include "../Components/HealthComponent.h"
 #include <SDL2/SDL.h>
 
+// TODO 模仿智能指针的思路,在没有一个人的时候思路
 class RenderHealthBarSystem: public System {
     public:
         RenderHealthBarSystem() {

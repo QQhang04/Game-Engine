@@ -62,6 +62,7 @@ class Entity {
         class Registry* registry;
 };
 
+// TODO:允许动态删除和增加系统?
 class System {
     private:
         Signature componentSignature;

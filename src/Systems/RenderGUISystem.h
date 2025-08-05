@@ -80,6 +80,42 @@ class RenderGUISystem : public System {
             }
             ImGui::End();
 
+            // Spawn Tree窗口
+            if (ImGui::Begin("Spawn trees")) {
+                ImGui::Text("here is what we spawn new trees");
+                static int treeXPos = 0;
+                static int treeYPos = 0;
+                static int scaleX = 1;
+                static int scaleY = 1;
+                static int health = 50;
+
+                if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    ImGui::InputInt("position x", &treeXPos);
+                    ImGui::InputInt("position y", &treeYPos);
+                    ImGui::SliderInt("scale x", &scaleX, 1, 10);
+                    ImGui::SliderInt("scale y", &scaleY, 1, 10);
+                }
+                ImGui::Spacing();
+
+                if (ImGui::CollapsingHeader("Health", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    ImGui::SliderInt("%", &health, 0, 100);
+                }
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+
+                if (ImGui::Button("Spawn tree")) {
+                    Entity tree = registry->CreateEntity();
+                    tree.AddToGroup("obstacle");
+                    tree.AddComponent<TransformComponent>(glm::vec2(treeXPos, treeYPos), glm::vec2(scaleX, scaleY));
+                    tree.AddComponent<SpriteComponent>("tree-image", 32, 32, 2);
+                    tree.AddComponent<BoxColliderComponent>(glm::vec2(25, 20), glm::vec2(5, 5));
+                    tree.AddComponent<HealthComponent>(health);
+                }
+            }
+            ImGui::End();
+
             // 显示鼠标坐标窗口
             ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav;
             ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always, ImVec2(0, 0));
