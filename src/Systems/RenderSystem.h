@@ -25,9 +25,27 @@ class RenderSystem : public System {
             };
             std::vector<RenderableEntity> renderables;
             for (auto entity : GetSystemEntities()) {
+                const auto& transform = entity.GetComponent<TransformComponent>();
+                const auto& sprite = entity.GetComponent<SpriteComponent>();
+                SDL_Rect entityRect = {
+                    static_cast<int>(transform.position.x),
+                    static_cast<int>(transform.position.y),
+                    static_cast<int>(sprite.width * transform.scale.x),
+                    static_cast<int>(sprite.height * transform.scale.y)
+                };
+                bool isOutSideOfCam = 
+                    entityRect.x + entityRect.w < camera.x ||
+                    entityRect.x > camera.x + camera.w ||
+                    entityRect.y + entityRect.h < camera.y ||
+                    entityRect.y > camera.y + camera.h;
+                
+                if (isOutSideOfCam && !sprite.isFixed) {
+                    continue;
+                }
+
                 renderables.emplace_back(
-                    entity.GetComponent<TransformComponent>(),
-                    entity.GetComponent<SpriteComponent>()
+                    transform,
+                    sprite
                 );
             }
 
